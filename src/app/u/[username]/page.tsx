@@ -1,0 +1,266 @@
+'use client';
+
+import { notFound, useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import type { IUser } from '@/types';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Header } from '@/components/ui/Header';
+
+export default function PublicProfilePage() {
+  const params = useParams();
+  const username = params.username as string;
+  const [user, setUser] = useState<IUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const res = await fetch(`/api/users/username/${username}`);
+        
+        if (!res.ok) {
+          notFound();
+          return;
+        }
+
+        const result = await res.json();
+        if (result.success && result.data) {
+          setUser(result.data);
+        } else {
+          notFound();
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        notFound();
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUser();
+  }, [username]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+        <Header variant="public" showBackButton={true} />
+        <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    notFound();
+  }
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'superadmin':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'admin':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'leader':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'member':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case 'allow':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'waiting':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'block':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+      <Header variant="public" showBackButton={true} />
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        {/* Profile Header Card */}
+        <Card className="border-0 shadow-2xl overflow-hidden mb-6">
+          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 h-32" />
+          <CardContent className="relative pt-0 pb-8">
+            {/* Avatar */}
+            <div className="flex justify-center -mt-16 mb-4">
+              <div className="relative">
+                {user.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={user.username}
+                    className="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover"
+                  />
+                ) : (
+                  <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <span className="text-5xl font-bold text-white">
+                      {user.username.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                {/* Status Indicator */}
+                <div
+                  className={`absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-white ${
+                    user.status === 'allow'
+                      ? 'bg-green-500'
+                      : user.status === 'waiting'
+                      ? 'bg-yellow-500'
+                      : 'bg-red-500'
+                  }`}
+                />
+              </div>
+            </div>
+
+            {/* User Info */}
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                {user.username}
+              </h1>
+
+              {/* Badges */}
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold border ${getRoleBadgeColor(
+                    user.role
+                  )}`}
+                >
+                  {user.role.toUpperCase()}
+                </span>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeColor(
+                    user.status
+                  )}`}
+                >
+                  {user.status.toUpperCase()}
+                </span>
+              </div>
+
+              {/* Bio */}
+              {user.bio && (
+                <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
+                  {user.bio}
+                </p>
+              )}
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-4 max-w-md mx-auto mt-8">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 shadow-md">
+                  <div className="text-3xl font-bold text-blue-700 mb-1">
+                    {user.score}
+                  </div>
+                  <div className="text-sm text-blue-600 font-medium">Score</div>
+                </div>
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 shadow-md">
+                  <div className="text-3xl font-bold text-purple-700 mb-1">
+                    {user.vote_count}
+                  </div>
+                  <div className="text-sm text-purple-600 font-medium">Votes</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Additional Info Cards */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Contact Info */}
+          <Card className="border-0 shadow-xl">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <svg
+                  className="w-6 h-6 mr-2 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+                Contact Information
+              </h2>
+              <div className="space-y-3">
+                <div className="flex items-start">
+                  <span className="text-gray-500 font-medium min-w-[100px]">Email:</span>
+                  <span className="text-gray-900">{user.email}</span>
+                </div>
+                {user.slackname && (
+                  <div className="flex items-start">
+                    <span className="text-gray-500 font-medium min-w-[100px]">Slack:</span>
+                    <span className="text-gray-900">{user.slackname}</span>
+                  </div>
+                )}
+                {user.dotaname && (
+                  <div className="flex items-start">
+                    <span className="text-gray-500 font-medium min-w-[100px]">Dota:</span>
+                    <span className="text-gray-900">{user.dotaname}</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Account Details */}
+          <Card className="border-0 shadow-xl">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <svg
+                  className="w-6 h-6 mr-2 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Account Details
+              </h2>
+              <div className="space-y-3">
+                <div className="flex items-start">
+                  <span className="text-gray-500 font-medium min-w-[100px]">Role:</span>
+                  <span className="text-gray-900 capitalize">{user.role}</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-gray-500 font-medium min-w-[100px]">Status:</span>
+                  <span className="text-gray-900 capitalize">{user.status}</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-gray-500 font-medium min-w-[100px]">Joined:</span>
+                  <span className="text-gray-900">{formatDate(user.created_at)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+

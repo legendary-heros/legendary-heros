@@ -1,45 +1,16 @@
 'use client';
 
-import Image from 'next/image';
 import SignupForm from '@/components/forms/SignupForm';
-import { Button } from '@/components/ui/Button';
-import Link from 'next/link';
+import { Header } from '@/components/ui/Header';
 import PublicRoute from '@/components/auth/PublicRoute';
+import Link from 'next/link';
 
 export default function SignUpPage() {
   return (
     <PublicRoute>
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
         {/* Navigation Header */}
-        <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <Link href="/" className="flex items-center">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 ">
-                    <Image 
-                      src="/favicon.ico" 
-                      alt="Menu" 
-                      width={35} 
-                      height={35}
-                      className={`rounded-lg flex items-center justify-center`}
-                    />
-                  </div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    Legendary Heroes
-                  </h1>
-                </div>
-              </Link>
-              <div className="flex items-center">
-                <Link href="/">
-                  <Button variant="ghost" className="text-gray-700">
-                    Back to Home
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </nav>
+        <Header variant="public" showBackButton={true} />
 
         {/* Main Content */}
         <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">

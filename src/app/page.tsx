@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Header } from '@/components/ui/Header';
 import Link from 'next/link';
 import PublicRoute from '@/components/auth/PublicRoute';
 
@@ -11,40 +11,7 @@ export default function Home() {
     <PublicRoute>
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
         {/* Navigation Header */}
-        <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex items-center">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 ">
-                    <Image 
-                      src="/favicon.ico" 
-                      alt="Menu" 
-                      width={35} 
-                      height={35}
-                      className={`rounded-lg flex items-center justify-center`}
-                    />
-                  </div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    Legendary Heroes
-                  </h1>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <Link href="/signin">
-                  <Button variant="ghost" className="text-gray-700 hover:text-indigo-600">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/signup">
-                  <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/30">
-                    Get Started
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </nav>
+        <Header variant="public" />
 
         {/* Hero Section */}
         <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
