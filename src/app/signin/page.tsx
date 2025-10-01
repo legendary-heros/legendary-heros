@@ -4,8 +4,20 @@ import LoginForm from '@/components/forms/LoginForm';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import PublicRoute from '@/components/auth/PublicRoute';
+import { useAppSelector } from '@/hooks/useRedux';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function SignInPage() {
+  
+  const { isAuthenticated } = useAppSelector((state: any) => state.auth);
+  const router = useRouter();
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, router]);
+
   return (
     <PublicRoute>
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">

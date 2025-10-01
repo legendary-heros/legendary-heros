@@ -5,38 +5,48 @@ import { generateToken } from '@/lib/jwt';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const { identifier, password } = await request.json();
 
     // Validate input
-    if (!email || !password) {
+    if (!identifier || !password) {
       return NextResponse.json(
         { 
           success: false,
-          message: 'Email and password are required'
+          message: 'Email/username and password are required'
         },
         { status: 400 }
       );
     }
 
-    // Get user by email
-    const { data: user, error } = await db.getUserByEmail(email);
+    // Check if identifier is an email (contains @) or username
+    const isEmail = identifier.includes('@');
+    
+    // Get user by email or username
+    const { data: user, error } = isEmail 
+      ? await db.getUserByEmail(identifier)
+      : await db.getUserByUsername(identifier);
 
     if (error || !user) {
       return NextResponse.json(
         { 
           success: false,
-          message: 'Invalid email or password'
+          message: 'Invalid credentials'
         },
         { status: 401 }
       );
     }
 
-    // Check if user status is blocked
-    if ((user as any).status === 'block') {
+    // Check if user status is allowed
+    if ((user as any).status !== 'allow') {
+      const statusMessages: Record<string, string> = {
+        'waiting': 'Your account is pending approval',
+        'block': 'Your account has been blocked'
+      };
+      
       return NextResponse.json(
         { 
           success: false,
-          message: 'Your account has been blocked'
+          message: statusMessages[(user as any).status] || 'Your account is not active'
         },
         { status: 403 }
       );
@@ -49,7 +59,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           success: false,
-          message: 'Invalid email or password'
+          message: 'Invalid credentials'
         },
         { status: 401 }
       );

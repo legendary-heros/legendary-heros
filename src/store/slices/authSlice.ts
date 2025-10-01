@@ -22,9 +22,9 @@ export const signUp = createAsyncThunk(
 
 export const signIn = createAsyncThunk(
   'auth/signIn',
-  async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
+  async ({ identifier, password }: { identifier: string; password: string }, { rejectWithValue }) => {
     try { 
-      const response = await api.post(endpoints.auth.signIn, { email, password });
+      const response = await api.post(endpoints.auth.signIn, { identifier, password });
       // Store token in localStorage
       if (response.data.data?.token) {
         localStorage.setItem('legendary_token', response.data.data.token);

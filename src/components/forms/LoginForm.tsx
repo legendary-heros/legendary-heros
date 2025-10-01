@@ -13,7 +13,7 @@ import { signIn, clearError } from '@/store/slices/authSlice';
 import type { ILoginForm } from '@/types';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  identifier: z.string().min(1, 'Email or username is required'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
@@ -39,7 +39,7 @@ export default function LoginForm() {
 
   const onSubmit = async (data: ILoginForm) => {
     dispatch(clearError());
-    await dispatch(signIn({ email: data.email, password: data.password }));
+    await dispatch(signIn({ identifier: data.identifier, password: data.password }));
   };
 
   return (
@@ -68,20 +68,20 @@ export default function LoginForm() {
         )}
         
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-gray-700 font-medium">Email Address</Label>
+          <Label htmlFor="identifier" className="text-gray-700 font-medium">Email or Username</Label>
           <Input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
+            id="identifier"
+            type="text"
+            placeholder="you@example.com or username"
             className="h-12 px-4 bg-gray-50 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 transition-all"
-            {...register('email')}
+            {...register('identifier')}
           />
-          {errors.email && (
+          {errors.identifier && (
             <p className="text-sm text-red-600 flex items-center mt-1">
               <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
-              {errors.email.message}
+              {errors.identifier.message}
             </p>
           )}
         </div>

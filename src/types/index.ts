@@ -108,7 +108,7 @@ export interface IApiResponse<T = any> {
 
 // Form types
 export interface ILoginForm {
-  email: string;
+  identifier: string; // Can be email or username
   password: string;
 }
 
