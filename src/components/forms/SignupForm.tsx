@@ -14,6 +14,7 @@ import type { ISignupForm } from '@/types';
 
 const signupSchema = z.object({
   email: z.string().email('Invalid email address'),
+  username: z.string().min(3, 'Username must be at least 3 characters'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(6, 'Please confirm your password'),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -25,7 +26,7 @@ export default function SignupForm() {
   const [success, setSuccess] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { isLoading, error, isAuthenticated } = useAppSelector((state: any) => state.auth);
+  const { isFormLoading, error, isAuthenticated } = useAppSelector((state: any) => state.auth);
 
   const {
     register,
@@ -44,7 +45,7 @@ export default function SignupForm() {
 
   const onSubmit = async (data: ISignupForm) => {
     dispatch(clearError());
-    const result = await dispatch(signUp({ email: data.email, password: data.password }));
+    const result = await dispatch(signUp({ email: data.email, password: data.password, username: data.username }));
     
     if (signUp.fulfilled.match(result)) {
       setSuccess(true);
@@ -115,6 +116,25 @@ export default function SignupForm() {
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="username" className="text-gray-700 font-medium">Username</Label>
+          <Input
+            id="username"
+            type="text"
+            placeholder="Choose a username"
+            className="h-12 px-4 bg-gray-50 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 transition-all"
+            {...register('username')}
+          />
+          {errors.username && (
+            <p className="text-sm text-red-600 flex items-center mt-1">
+              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              {errors.username.message}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
           <Input
             id="password"
@@ -155,9 +175,9 @@ export default function SignupForm() {
         <Button 
           type="submit" 
           className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg shadow-indigo-500/30 transition-all duration-300 hover:scale-[1.02]" 
-          disabled={isLoading}
+          disabled={isFormLoading}
         >
-          {isLoading ? (
+          {isFormLoading ? (
             <div className="flex items-center justify-center">
               <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

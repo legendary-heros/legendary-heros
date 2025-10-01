@@ -13,34 +13,36 @@ export const api: AxiosInstance = axios.create({
   },
 });
 
-// api.interceptors.request.use(
-//   (config: InternalAxiosRequestConfig) => {
-//     // Get token from localStorage if available (for client-side)
-//     if (typeof window !== 'undefined') {
-//       const token = localStorage.getItem('legendary_token');
-//       if (token) {
-//         config.headers.Authorization = `Bearer ${token}`;
-//       }
-//     }
-//     return config;
-//   },
-//   (error: AxiosError) => {
-//     return Promise.reject(error);
-//   }
-// );
+// Request interceptor - add JWT token to requests
+api.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    // Get token from localStorage if available (for client-side)
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('legendary_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error: AxiosError) => {
+    return Promise.reject(error);
+  }
+);
 
-// api.interceptors.response.use(
-//   (response) => response,
-//   (error: AxiosError) => {
-//     if (error.response?.status === 401) {
-//       // Handle unauthorized access (client-side only)
-//       if (typeof window !== 'undefined') {
-//         localStorage.removeItem('legendary_token');
-//         window.location.href = '/signin';
-//       }
-//     }
-//     return Promise.reject(error);
-//   }
-// );
+// Response interceptor - handle authentication errors
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized access (client-side only)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('legendary_token');
+        window.location.href = '/signin';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

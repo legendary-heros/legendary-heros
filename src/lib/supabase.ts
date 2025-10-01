@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { IDatabase, IUserInsert, IUserUpdate } from '@/types';
+import type { IDatabase, IUserDB, IUserInsert, IUserUpdate } from '@/types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -10,61 +10,82 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient<IDatabase>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
+    autoRefreshToken: false,
+    persistSession: false,
   },
 });
 
-// Auth helpers
-export const auth = {
-  signUp: async (email: string, password: string) => {
-    return await supabase.auth.signUp({ email, password });
-  },
-  
-  signIn: async (email: string, password: string) => {
-    return await supabase.auth.signInWithPassword({ email, password });
-  },
-  
-  signOut: async () => {
-    return await supabase.auth.signOut();
-  },
-  
-  getSession: async () => {
-    return await supabase.auth.getSession();
-  },
-  
-  onAuthStateChange: (callback: (event: string, session: any) => void) => {
-    return supabase.auth.onAuthStateChange(callback);
-  },
-};
-
-// Database helpers - will be implemented once Supabase tables are set up
+// Database helpers for custom authentication
 export const db = {
   // Users
   getUsers: async () => {
-    // TODO: Implement once users table is created in Supabase
-    return { data: [], error: null };
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    return { data, error };
   },
   
   getUser: async (id: string) => {
-    // TODO: Implement once users table is created in Supabase
-    return { data: null, error: null };
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    return { data, error };
+  },
+
+  getUserByEmail: async (email: string) => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+    
+    return { data, error };
+  },
+
+  getUserByUsername: async (username: string) => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .single();
+    return { data, error };
   },
   
-  createUser: async (userData: any) => {
-    // TODO: Implement once users table is created in Supabase
-    return { data: null, error: null };
+  createUser: async (userData: IUserInsert) => {
+    const { data, error } = await supabase
+      .from('users')
+      // @ts-ignore - Type compatibility issue with Supabase strict typing
+      .insert(userData)
+      .select()
+      .single();
+    
+    return { data, error };
   },
   
-  updateUser: async (id: string, userData: any) => {
-    // TODO: Implement once users table is created in Supabase
-    return { data: null, error: null };
+  updateUser: async (id: string, userData: IUserUpdate) => {
+    const { data, error } = await supabase
+      .from('users')
+      // @ts-ignore - Type compatibility issue with Supabase strict typing
+      .update(userData)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    return { data, error };
   },
   
   deleteUser: async (id: string) => {
-    // TODO: Implement once users table is created in Supabase
-    return { data: null, error: null };
+    const { data, error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', id);
+    
+    return { data, error };
   },
 };
 

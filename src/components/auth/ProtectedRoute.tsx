@@ -1,9 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
-import { getSession } from '@/store/slices/authSlice';
+import { useAppSelector } from '@/hooks/useRedux';
 import PageLoader from '@/components/ui/PageLoader';
 
 interface IProtectedRouteProps {
@@ -15,27 +12,18 @@ export default function ProtectedRoute({
   children, 
   redirectTo = '/signin' 
 }: IProtectedRouteProps) {
-  const router = useRouter();
-  const dispatch = useAppDispatch();
   const { isAuthenticated, isPageLoading } = useAppSelector((state: any) => state.auth);
 
-  useEffect(() => {
-    dispatch(getSession());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (!isAuthenticated && !isPageLoading) {
-      router.push(redirectTo);
-    }
-  }, [isAuthenticated, isPageLoading, router, redirectTo]);
-
+  // Show loading page while verifying authentication
   if (isPageLoading) {
     return <PageLoader message="Verifying your session..." />;
   }
 
+  // Redirect to signin if not authenticated
   if (!isAuthenticated) {
-    return null; // Will redirect to sign in
+    return null;
   }
 
+  // Render children components if authenticated
   return <>{children}</>;
 }

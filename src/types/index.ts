@@ -1,24 +1,71 @@
-// Global type definitions
+// Enums
+export type UserStatus = 'allow' | 'waiting' | 'block';
+export type UserRole = 'superadmin' | 'admin' | 'leader' | 'member';
+
+// Database user type (includes password)
+export interface IUserDB {
+  id: string;
+  email: string;
+  password: string;
+  username: string;
+  slackname?: string | null;
+  dotaname?: string | null;
+  status: UserStatus;
+  role: UserRole;
+  score: string;
+  vote_count: string;
+  bio?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Client user type (excludes password)
 export interface IUser {
   id: string;
   email: string;
+  username: string;
+  slackname?: string | null;
+  dotaname?: string | null;
+  status: UserStatus;
+  role: UserRole;
+  score: string;
+  vote_count: string;
+  bio?: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface IUserInsert {
   email: string;
+  password: string;
+  username: string;
+  slackname?: string;
+  dotaname?: string;
+  status?: UserStatus;
+  role?: UserRole;
+  score?: string;
+  vote_count?: string;
+  bio?: string;
 }
 
 export interface IUserUpdate {
   email?: string;
+  password?: string;
+  username?: string;
+  slackname?: string;
+  dotaname?: string;
+  status?: UserStatus;
+  role?: UserRole;
+  score?: string;
+  vote_count?: string;
+  bio?: string;
 }
 
 export interface IDatabase {
   public: {
     Tables: {
       users: {
-        Row: IUser;
+        Row: IUserDB;
         Insert: IUserInsert;
         Update: IUserUpdate;
       };
@@ -30,7 +77,8 @@ export interface IDatabase {
       [_ in never]: never;
     };
     Enums: {
-      [_ in never]: never;
+      user_status: UserStatus;
+      user_role: UserRole;
     };
   };
 }
@@ -43,6 +91,7 @@ export interface IRootState {
 
 export interface IAuthState {
   user: IUser | null;
+  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   isPageLoading: boolean;
@@ -67,4 +116,5 @@ export interface ISignupForm {
   email: string;
   password: string;
   confirmPassword: string;
+  username: string;
 }

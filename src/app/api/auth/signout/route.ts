@@ -1,29 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
-    const { error } = await auth.signOut();
-
-    if (error) {
-      return NextResponse.json(
-        { 
-          success: false,
-          message: error.message
-        },
-        { status: 400 }
-      );
-    }
-
+    // With JWT-based authentication, signout is primarily handled on the client side
+    // by removing the token from storage. This endpoint just acknowledges the request.
+    
     return NextResponse.json(
       { 
         success: true,
-        message: 'Sign out successful'
+        message: 'Sign out successful',
+        data: null
       },
       { status: 200 }
     );
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Signout error:', errorMessage);
     return NextResponse.json(
       { 
         success: false,
