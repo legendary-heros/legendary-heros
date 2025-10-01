@@ -30,6 +30,89 @@ export default function ProfileForm() {
   const [validationError, setValidationError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
 
+  const getUserLevel = (score: number) => {
+    if (score >= 1000) {
+      return {
+        name: 'SS Level',
+        tier: 'master',
+        stars: 5,
+        description: 'Monster, God',
+        color: 'from-yellow-400 to-orange-500',
+        textColor: 'text-yellow-600',
+        bgColor: 'bg-yellow-50'
+      };
+    } else if (score >= 500) {
+      return {
+        name: 'S Level',
+        tier: 'expert',
+        stars: 4,
+        description: 'A hero who has ability to change round situation',
+        color: 'from-purple-400 to-pink-500',
+        textColor: 'text-purple-600',
+        bgColor: 'bg-purple-50'
+      };
+    } else if (score >= 250) {
+      return {
+        name: 'A Level',
+        tier: 'professional',
+        stars: 3,
+        description: 'A hero who can do rampage in round',
+        color: 'from-blue-400 to-cyan-500',
+        textColor: 'text-blue-600',
+        bgColor: 'bg-blue-50'
+      };
+    } else if (score >= 100) {
+      return {
+        name: 'B Level',
+        tier: 'intermediate',
+        stars: 2,
+        description: 'A hero who is good at carry and support both and sometimes takes 1 place in the round',
+        color: 'from-green-400 to-emerald-500',
+        textColor: 'text-green-600',
+        bgColor: 'bg-green-50'
+      };
+    } else if (score >= 50) {
+      return {
+        name: 'C Level',
+        tier: 'beginner',
+        stars: 1,
+        description: 'A hero who is good at carry',
+        color: 'from-blue-400 to-blue-500',
+        textColor: 'text-blue-600',
+        bgColor: 'bg-blue-50'
+      };
+    } else {
+      return {
+        name: 'D Level',
+        tier: 'novice',
+        stars: 0,
+        description: 'A new hero starting their journey',
+        color: 'from-slate-300 to-slate-400',
+        textColor: 'text-slate-600',
+        bgColor: 'bg-slate-50'
+      };
+    }
+  };
+
+  const renderStars = (count: number, maxStars: number = 5) => {
+    return (
+      <div className="flex gap-1">
+        {[...Array(maxStars)].map((_, index) => (
+          <svg
+            key={index}
+            className={`w-5 h-5 ${
+              index < count ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 fill-gray-300'
+            }`}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        ))}
+      </div>
+    );
+  };
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -155,6 +238,42 @@ export default function ProfileForm() {
         </div>
         <p className="text-sm text-gray-500">Click the camera icon to upload a new avatar</p>
       </div>
+
+      {/* Level Display Section */}
+      {user && (
+        <div className="pb-6 border-b">
+          {(() => {
+            const level = getUserLevel(Number(user.score) || 0);
+            return (
+              <div className="max-w-2xl mx-auto">
+                <div className={`p-4 rounded-xl ${level.bgColor} border-2 border-${level.textColor.replace('text-', '')}-200`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-left">
+                      <div className="text-xl font-bold text-gray-900">
+                        {level.name} <span className="text-sm font-normal text-gray-600">- {level.tier}</span>
+                      </div>
+                    </div>
+                    {renderStars(level.stars)}
+                  </div>
+                  <p className="text-sm text-gray-600 italic mb-3">{level.description}</p>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex gap-4">
+                      <div>
+                        <span className="text-gray-500">Current Score:</span>
+                        <span className="ml-2 font-bold text-gray-900">{user.score}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Total Votes:</span>
+                        <span className="ml-2 font-bold text-gray-900">{user.vote_count || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
 
       {/* Form Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

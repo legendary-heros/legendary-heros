@@ -5,12 +5,17 @@ import { useEffect, useState } from 'react';
 import type { IUser } from '@/types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Header } from '@/components/ui/Header';
+import { useAppSelector } from '@/hooks/useRedux';
+import { MainLayout } from '@/components/layouts/MainLayout';
+import PublicRoute from '@/components/auth/PublicRoute';
 
 export default function PublicProfilePage() {
   const params = useParams();
   const username = params.username as string;
   const [user, setUser] = useState<IUser | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { isAuthenticated } = useAppSelector((state: any) => state.auth);
 
   useEffect(() => {
     async function fetchUser() {
@@ -42,7 +47,14 @@ export default function PublicProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
-        <Header variant="public" showBackButton={true} />
+        {
+          isAuthenticated? (
+            <Header />
+          ): (
+            <Header variant="public" showBackButton={true} />
+          )
+        }
+        
         <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -94,9 +106,91 @@ export default function PublicProfilePage() {
     });
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
-      <Header variant="public" showBackButton={true} />
+  const getUserLevel = (score: number) => {
+    if (score >= 1000) {
+      return {
+        name: 'SS Level',
+        tier: 'master',
+        stars: 5,
+        description: 'Monster, God',
+        color: 'from-yellow-400 to-orange-500',
+        textColor: 'text-yellow-600',
+        bgColor: 'bg-yellow-50'
+      };
+    } else if (score >= 500) {
+      return {
+        name: 'S Level',
+        tier: 'expert',
+        stars: 4,
+        description: 'A hero who has ability to change round situation',
+        color: 'from-purple-400 to-pink-500',
+        textColor: 'text-purple-600',
+        bgColor: 'bg-purple-50'
+      };
+    } else if (score >= 250) {
+      return {
+        name: 'A Level',
+        tier: 'professional',
+        stars: 3,
+        description: 'A hero who can do rampage in round',
+        color: 'from-blue-400 to-cyan-500',
+        textColor: 'text-blue-600',
+        bgColor: 'bg-blue-50'
+      };
+    } else if (score >= 100) {
+      return {
+        name: 'B Level',
+        tier: 'intermediate',
+        stars: 2,
+        description: 'A hero who is good at carry and support both and sometimes takes 1 place in the round',
+        color: 'from-green-400 to-emerald-500',
+        textColor: 'text-green-600',
+        bgColor: 'bg-green-50'
+      };
+    } else if (score >= 50) {
+      return {
+        name: 'C Level',
+        tier: 'beginner',
+        stars: 1,
+        description: 'A hero who is good at carry',
+        color: 'from-blue-400 to-blue-500',
+        textColor: 'text-blue-600',
+        bgColor: 'bg-blue-50'
+      };
+    } else {
+      return {
+        name: 'D Level',
+        tier: 'novice',
+        stars: 0,
+        description: 'A new hero starting their journey',
+        color: 'from-slate-300 to-slate-400',
+        textColor: 'text-slate-600',
+        bgColor: 'bg-slate-50'
+      };
+    }
+  };
+
+  const renderStars = (count: number, maxStars: number = 5) => {
+    return (
+      <div className="flex gap-1">
+        {[...Array(maxStars)].map((_, index) => (
+          <svg
+            key={index}
+            className={`w-5 h-5 ${
+              index < count ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 fill-gray-300'
+            }`}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        ))}
+      </div>
+    );
+  };
+
+  const renderComponent = () => {
+    return (
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Profile Header Card */}
         <Card className="border-0 shadow-2xl overflow-hidden mb-6">
@@ -155,6 +249,24 @@ export default function PublicProfilePage() {
                 </span>
               </div>
 
+              {/* Level Display */}
+              {(() => {
+                const level = getUserLevel(Number(user.score) || 0);
+                return (
+                  <div className={`max-w-md mx-auto mb-6 p-4 rounded-xl ${level.bgColor} border-2 border-${level.textColor.replace('text-', '')}-200`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-left">
+                        <div className="text-lg font-bold text-gray-900">
+                          {level.name} <span className="text-sm font-normal text-gray-600">- {level.tier}</span>
+                        </div>
+                      </div>
+                      {renderStars(level.stars)}
+                    </div>
+                    <p className="text-sm text-gray-600 text-left italic">{level.description}</p>
+                  </div>
+                );
+              })()}
+
               {/* Bio */}
               {user.bio && (
                 <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
@@ -204,18 +316,18 @@ export default function PublicProfilePage() {
               </h2>
               <div className="space-y-3">
                 <div className="flex items-start">
-                  <span className="text-gray-500 font-medium min-w-[100px]">Email:</span>
-                  <span className="text-gray-900">{user.email}</span>
+                  <span className="text-gray-500 font-medium min-w-[100px]">User Name:</span>
+                  <span className="text-gray-900">{user.username}</span>
                 </div>
                 {user.slackname && (
                   <div className="flex items-start">
-                    <span className="text-gray-500 font-medium min-w-[100px]">Slack:</span>
+                    <span className="text-gray-500 font-medium min-w-[100px]">Slack Name:</span>
                     <span className="text-gray-900">{user.slackname}</span>
                   </div>
                 )}
                 {user.dotaname && (
                   <div className="flex items-start">
-                    <span className="text-gray-500 font-medium min-w-[100px]">Dota:</span>
+                    <span className="text-gray-500 font-medium min-w-[100px]">Dota Name:</span>
                     <span className="text-gray-900">{user.dotaname}</span>
                   </div>
                 )}
@@ -260,7 +372,24 @@ export default function PublicProfilePage() {
           </Card>
         </div>
       </div>
-    </div>
+    )
+  }
+
+  if (isAuthenticated) {
+    return (
+      <MainLayout>
+        {renderComponent()}
+      </MainLayout>
+    );
+  }
+  
+  return (
+    <PublicRoute>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+        <Header variant="public" showBackButton={true} />
+        {renderComponent()}
+      </div>
+    </PublicRoute>
   );
 }
 
