@@ -15,6 +15,9 @@ const endpoints = {
         updateScore: (id: string) => `/users/${id}/score`,
         updateRole: (id: string) => `/users/${id}/role`,
         delete: (id: string) => `/users/${id}`,
+        getByUsername: (username: string) => `/users/username/${username}`,
+        vote: (id: string) => `/users/${id}/vote`,
+        checkVote: (id: string) => `/users/${id}/vote`,
     }
 }
 

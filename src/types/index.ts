@@ -64,6 +64,18 @@ export interface IUserUpdate {
   avatar_url?: string;
 }
 
+export interface IVote {
+  id: string;
+  voter_id: string;
+  voted_for_id: string;
+  created_at: string;
+}
+
+export interface IVoteInsert {
+  voter_id: string;
+  voted_for_id: string;
+}
+
 export interface IDatabase {
   public: {
     Tables: {
@@ -71,6 +83,11 @@ export interface IDatabase {
         Row: IUserDB;
         Insert: IUserInsert;
         Update: IUserUpdate;
+      };
+      votes: {
+        Row: IVote;
+        Insert: IVoteInsert;
+        Update: never;
       };
     };
     Views: {
@@ -90,6 +107,7 @@ export interface IDatabase {
 export interface IRootState {
   auth: IAuthState;
   users: IUsersState;
+  userProfile: IUserProfileState;
   // Add other slice states here
 }
 
@@ -110,6 +128,15 @@ export interface IUsersState {
   totalPages: number;
   loading: boolean;
   updating: boolean;
+  error: string | null;
+}
+
+export interface IUserProfileState {
+  user: IUser | null;
+  loading: boolean;
+  voting: boolean;
+  hasVoted: boolean;
+  checkingVote: boolean;
   error: string | null;
 }
 

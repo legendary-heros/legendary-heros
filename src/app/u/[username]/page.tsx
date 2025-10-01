@@ -2,47 +2,44 @@
 
 import { notFound, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import type { IUser } from '@/types';
+import { useSelector, useDispatch } from 'react-redux';
+import type { IRootState } from '@/types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Header } from '@/components/ui/Header';
-import { useAppSelector } from '@/hooks/useRedux';
 import { MainLayout } from '@/components/layouts/MainLayout';
 import PublicRoute from '@/components/auth/PublicRoute';
+import { getUserByUsername, voteUser, clearProfile, checkVoteStatus } from '@/store/slices/userProfileSlice';
+import { AppDispatch } from '@/store';
 
 export default function PublicProfilePage() {
   const params = useParams();
   const username = params.username as string;
-  const [user, setUser] = useState<IUser | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const { isAuthenticated } = useAppSelector((state: any) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+  
+  const { user: currentUser, isAuthenticated } = useSelector((state: IRootState) => state.auth);
+  const { user, loading, voting, hasVoted, error } = useSelector((state: IRootState) => state.userProfile);
+  const [voteSuccess, setVoteSuccess] = useState(false);
 
   useEffect(() => {
-    async function fetchUser() {
-      try {
-        const res = await fetch(`/api/users/username/${username}`);
-        
-        if (!res.ok) {
-          notFound();
-          return;
-        }
+    dispatch(getUserByUsername(username));
 
-        const result = await res.json();
-        if (result.success && result.data) {
-          setUser(result.data);
-        } else {
-          notFound();
-        }
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-        notFound();
-      } finally {
-        setLoading(false);
-      }
+    return () => {
+      dispatch(clearProfile());
+    };
+  }, [dispatch, username]);
+
+  // Check vote status when user is loaded and current user is authenticated
+  useEffect(() => {
+    if (user && currentUser && user.id !== currentUser.id && isAuthenticated) {
+      dispatch(checkVoteStatus(user.id));
     }
+  }, [dispatch, user, currentUser, isAuthenticated]);
 
-    fetchUser();
-  }, [username]);
+  useEffect(() => {
+    if (error) {
+      notFound();
+    }
+  }, [error]);
 
   if (loading) {
     return (
@@ -66,8 +63,24 @@ export default function PublicProfilePage() {
   }
 
   if (!user) {
-    notFound();
+    return null;
   }
+
+  const handleVote = async () => {
+    if (!user || !currentUser || user.id === currentUser.id || hasVoted) return;
+
+    try {
+      await dispatch(voteUser(user.id)).unwrap();
+      setVoteSuccess(true);
+      // Reset success message after 3 seconds
+      setTimeout(() => setVoteSuccess(false), 3000);
+    } catch (error: any) {
+      alert(error || 'Failed to vote');
+      console.error('Vote error:', error);
+    }
+  };
+
+  const canVote = isAuthenticated && currentUser && user && currentUser.id !== user.id && !hasVoted;
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -289,6 +302,44 @@ export default function PublicProfilePage() {
                   <div className="text-sm text-purple-600 font-medium">Votes</div>
                 </div>
               </div>
+
+              {/* Vote Button */}
+              {isAuthenticated && currentUser && user && currentUser.id !== user.id && (
+                <div className="mt-8 max-w-md mx-auto">
+                  {voteSuccess ? (
+                    <div className="bg-green-50 border-2 border-green-500 text-green-700 px-6 py-3 rounded-xl font-semibold text-center animate-pulse">
+                      ✓ Vote Submitted Successfully!
+                    </div>
+                  ) : hasVoted ? (
+                    <div className="bg-gray-100 border-2 border-gray-300 text-gray-600 px-6 py-3 rounded-xl font-semibold text-center flex items-center justify-center gap-2">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>You've Already Voted</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleVote}
+                      disabled={voting}
+                      className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                    >
+                      {voting ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Voting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          </svg>
+                          <span>Vote for {user.username}</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

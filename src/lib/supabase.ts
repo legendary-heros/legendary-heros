@@ -126,6 +126,49 @@ export const db = {
     
     return { data, error };
   },
+
+  // Votes
+  checkVote: async (voterId: string, votedForId: string) => {
+    const { data, error } = await supabase
+      .from('votes')
+      .select('*')
+      .eq('voter_id', voterId)
+      .eq('voted_for_id', votedForId)
+      .maybeSingle();
+    
+    return { data, error };
+  },
+
+  createVote: async (voterId: string, votedForId: string) => {
+    const { data, error } = await supabase
+      .from('votes')
+      .insert({
+        voter_id: voterId,
+        voted_for_id: votedForId
+      })
+      .select()
+      .single();
+    
+    return { data, error };
+  },
+
+  getVotesByUser: async (userId: string) => {
+    const { data, error } = await supabase
+      .from('votes')
+      .select('voted_for_id')
+      .eq('voter_id', userId);
+    
+    return { data, error };
+  },
+
+  getVotesForUser: async (userId: string) => {
+    const { data, error, count } = await supabase
+      .from('votes')
+      .select('*', { count: 'exact' })
+      .eq('voted_for_id', userId);
+    
+    return { data, error, count };
+  },
 };
 
 // Storage helpers
