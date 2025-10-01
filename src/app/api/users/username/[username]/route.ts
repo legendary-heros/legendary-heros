@@ -16,7 +16,7 @@ export async function GET(
 
     if (!username) {
       return NextResponse.json(
-        { success: false, error: 'Username is required', data: null },
+        { success: false, message: 'Username is required', data: null },
         { status: 400 }
       );
     }
@@ -25,7 +25,7 @@ export async function GET(
 
     if (error || !user) {
       return NextResponse.json(
-        { success: false, error: 'User not found', data: null },
+        { success: false, message: 'User not found', data: null },
         { status: 404 }
       );
     }
@@ -52,13 +52,13 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      error: null,
+      message: 'User fetched successfully',
       data: publicUserData,
     });
   } catch (error: any) {
     console.error('Error fetching user by username:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch user', data: null },
+      { success: false, message: 'Failed to fetch user', data: null },
       { status: 500 }
     );
   }

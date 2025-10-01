@@ -26,7 +26,7 @@ export async function POST(
         return NextResponse.json(
           { 
             success: false,
-            error: 'You cannot vote for yourself'
+            message: 'You cannot vote for yourself'
           },
           { status: 400 }
         );
@@ -39,7 +39,7 @@ export async function POST(
         return NextResponse.json(
           { 
             success: false,
-            error: 'You have already voted for this user'
+            message: 'You have already voted for this user'
           },
           { status: 400 }
         );
@@ -52,7 +52,7 @@ export async function POST(
         return NextResponse.json(
           { 
             success: false,
-            error: 'User not found'
+            message: 'User not found'
           },
           { status: 404 }
         );
@@ -65,7 +65,7 @@ export async function POST(
         return NextResponse.json(
           { 
             success: false,
-            error: 'Failed to record vote'
+            message: 'Failed to record vote'
           },
           { status: 500 }
         );
@@ -87,7 +87,7 @@ export async function POST(
         return NextResponse.json(
           { 
             success: false,
-            error: 'Failed to update vote'
+            message: 'Failed to update vote'
           },
           { status: 500 }
         );
@@ -110,7 +110,7 @@ export async function POST(
       return NextResponse.json(
         { 
           success: false,
-          error: 'Internal server error'
+          message: 'Internal server error'
         },
         { status: 500 }
       );
@@ -132,7 +132,7 @@ export async function GET(
         return NextResponse.json(
           { 
             success: false,
-            error: 'Unauthorized'
+            message: 'Unauthorized'
           },
           { status: 401 }
         );
@@ -155,7 +155,7 @@ export async function GET(
       return NextResponse.json(
         { 
           success: false,
-          error: 'Internal server error'
+          message: 'Internal server error'
         },
         { status: 500 }
       );

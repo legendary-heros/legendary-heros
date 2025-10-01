@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
       if (error) {
         return NextResponse.json(
-          { success: false, error: error.message, data: null },
+          { success: false, message: error.message, data: null },
           { status: 500 }
         );
       }
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        error: null,
+        message: 'Users fetched successfully',
         data: {
           users: sanitizedUsers,
           pagination: {
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
       console.error('Error fetching users:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch users', data: null },
+        { success: false, message: 'Failed to fetch users', data: null },
         { status: 500 }
       );
     }

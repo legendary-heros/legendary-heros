@@ -21,7 +21,7 @@ export async function PATCH(
       // Validate score
       if (score === undefined || score === null) {
         return NextResponse.json(
-          { success: false, error: 'Score is required', data: null },
+          { success: false, message: 'Score is required', data: null },
           { status: 400 }
         );
       }
@@ -32,7 +32,7 @@ export async function PATCH(
       const { data: targetUser, error: targetError } = await db.getUser(userId);
       if (targetError || !targetUser) {
         return NextResponse.json(
-          { success: false, error: 'User not found', data: null },
+          { success: false, message: 'User not found', data: null },
           { status: 404 }
         );
       }
@@ -40,7 +40,7 @@ export async function PATCH(
       // Admins cannot change score of other admins or superadmins
       if (req.user?.role === 'admin' && (targetUser.role === 'admin' || targetUser.role === 'superadmin')) {
         return NextResponse.json(
-          { success: false, error: 'Admins cannot change the score of other admins', data: null },
+          { success: false, message: 'Admins cannot change the score of other admins', data: null },
           { status: 403 }
         );
       }
@@ -49,7 +49,7 @@ export async function PATCH(
 
       if (error) {
         return NextResponse.json(
-          { success: false, error: error.message, data: null },
+          { success: false, message: error.message, data: null },
           { status: 500 }
         );
       }
@@ -60,19 +60,19 @@ export async function PATCH(
         const { password, ...sanitizedUser } = updatedUser as IUserDB;
         return NextResponse.json({
           success: true,
-          error: null,
+          message: 'User score updated successfully',
           data: { user: sanitizedUser },
         });
       }
 
       return NextResponse.json(
-        { success: false, error: 'User not found', data: null },
+        { success: false, message: 'User not found', data: null },
         { status: 404 }
       );
     } catch (error: any) {
       console.error('Error updating user score:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to update user score', data: null },
+        { success: false, message: 'Failed to update user score', data: null },
         { status: 500 }
       );
     }

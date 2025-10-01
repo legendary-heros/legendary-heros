@@ -63,11 +63,11 @@ export async function POST(req: NextRequest) {
                     avatar_url: publicUrlData.publicUrl,
                     path: filePath
                 },
-                error: null,
+                message: 'Avatar uploaded successfully',
             });
         } catch (error: any) {
             return NextResponse.json(
-                { success: false, message: error.message || 'Internal server error' },
+                { success: false, message: error.message || 'Failed to upload avatar' },
                 { status: 500 }
             );
         }

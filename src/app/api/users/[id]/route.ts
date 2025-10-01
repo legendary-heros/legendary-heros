@@ -22,7 +22,7 @@ export async function DELETE(
       // Prevent users from deleting themselves
       if (req.userId === userId) {
         return NextResponse.json(
-          { success: false, error: 'Cannot delete your own account', data: null },
+          { success: false, message: 'Cannot delete your own account', data: null },
           { status: 403 }
         );
       }
@@ -31,7 +31,7 @@ export async function DELETE(
       const { data: targetUser, error: targetError } = await db.getUser(userId);
       if (targetError || !targetUser) {
         return NextResponse.json(
-          { success: false, error: 'User not found', data: null },
+          { success: false, message: 'User not found', data: null },
           { status: 404 }
         );
       }
@@ -41,7 +41,7 @@ export async function DELETE(
       // Admins cannot delete other admins or superadmins
       if (req.user?.role === 'admin' && (targetUserData.role === 'admin' || targetUserData.role === 'superadmin')) {
         return NextResponse.json(
-          { success: false, error: 'Admins cannot delete other admins', data: null },
+          { success: false, message: 'Admins cannot delete other admins', data: null },
           { status: 403 }
         );
       }
@@ -50,20 +50,20 @@ export async function DELETE(
 
       if (error) {
         return NextResponse.json(
-          { success: false, error: error.message, data: null },
+          { success: false, message: error.message, data: null },
           { status: 500 }
         );
       }
 
       return NextResponse.json({
         success: true,
-        error: null,
+        message: 'User deleted successfully',
         data: { message: 'User deleted successfully' },
       });
     } catch (error: any) {
       console.error('Error deleting user:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to delete user', data: null },
+        { success: false, message: 'Failed to delete user', data: null },
         { status: 500 }
       );
     }

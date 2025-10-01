@@ -22,7 +22,7 @@ export async function PATCH(
       const validStatuses: UserStatus[] = ['allow', 'waiting', 'block'];
       if (!status || !validStatuses.includes(status)) {
         return NextResponse.json(
-          { success: false, error: 'Invalid status value', data: null },
+          { success: false, message: 'Invalid status value', data: null },
           { status: 400 }
         );
       }
@@ -30,7 +30,7 @@ export async function PATCH(
       // Prevent users from changing their own status
       if (req.userId === userId) {
         return NextResponse.json(
-          { success: false, error: 'Cannot change your own status', data: null },
+          { success: false, message: 'Cannot change your own status', data: null },
           { status: 403 }
         );
       }
@@ -39,7 +39,7 @@ export async function PATCH(
       const { data: targetUser, error: targetError } = await db.getUser(userId);
       if (targetError || !targetUser) {
         return NextResponse.json(
-          { success: false, error: 'User not found', data: null },
+          { success: false, message: 'User not found', data: null },
           { status: 404 }
         );
       }
@@ -47,7 +47,7 @@ export async function PATCH(
       // Admins cannot change status of other admins or superadmins
       if (req.user?.role === 'admin' && (targetUser.role === 'admin' || targetUser.role === 'superadmin')) {
         return NextResponse.json(
-          { success: false, error: 'Admins cannot change the status of other admins', data: null },
+          { success: false, message: 'Admins cannot change the status of other admins', data: null },
           { status: 403 }
         );
       }
@@ -56,7 +56,7 @@ export async function PATCH(
 
       if (error) {
         return NextResponse.json(
-          { success: false, error: error.message, data: null },
+          { success: false, message: error.message, data: null },
           { status: 500 }
         );
       }
@@ -67,19 +67,19 @@ export async function PATCH(
         const { password, ...sanitizedUser } = updatedUser as IUserDB;
         return NextResponse.json({
           success: true,
-          error: null,
+          message: 'User status updated successfully',
           data: { user: sanitizedUser },
         });
       }
 
       return NextResponse.json(
-        { success: false, error: 'User not found', data: null },
+        { success: false, message: 'User not found', data: null },
         { status: 404 }
       );
     } catch (error: any) {
       console.error('Error updating user status:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to update user status', data: null },
+        { success: false, message: 'Failed to update user status', data: null },
         { status: 500 }
       );
     }
