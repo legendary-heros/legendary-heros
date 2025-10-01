@@ -1,58 +1,17 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
-import { signOut } from '@/store/slices/authSlice';
+import { useAppSelector } from '@/hooks/useRedux';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { formatDate } from '@/lib/utils';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { MainLayout } from '@/components/layouts/MainLayout';
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state: any) => state.auth);
 
-  const handleSignOut = async () => {
-    await dispatch(signOut());
-    router.push('/');
-  };
-
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-        {/* Navigation Header */}
-        <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg"></div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Dashboard
-                </h1>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-lg">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm text-gray-700">{user?.email}</span>
-                </div>
-                <Button 
-                  onClick={handleSignOut} 
-                  variant="outline"
-                  className="border-gray-300 hover:border-red-500 hover:text-red-600 transition-colors"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  Sign Out
-                </Button>
-              </div>
-            </div>
-          </div>
-        </nav>
-
-        {/* Main Content */}
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <MainLayout>
+      <div className="max-w-7xl mx-auto">
           {/* Welcome Banner */}
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 mb-8 text-white">
             <div className="flex items-center justify-between">
@@ -223,7 +182,6 @@ export default function DashboardPage() {
             </Card>
           </div>
         </div>
-      </div>
-    </ProtectedRoute>
+    </MainLayout>
   );
 }
