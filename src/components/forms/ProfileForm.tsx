@@ -189,6 +189,7 @@ export default function ProfileForm() {
             onChange={handleInputChange}
             required
             placeholder="Enter your email"
+            disabled
           />
         </div>
 

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import Link from 'next/link';
@@ -15,7 +16,15 @@ export default function Home() {
             <div className="flex justify-between h-16">
               <div className="flex items-center">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg"></div>
+                  <div className="w-8 h-8 ">
+                    <Image 
+                      src="/favicon.ico" 
+                      alt="Menu" 
+                      width={35} 
+                      height={35}
+                      className={`rounded-lg flex items-center justify-center`}
+                    />
+                  </div>
                   <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                     Legendary Heroes
                   </h1>
@@ -42,7 +51,7 @@ export default function Home() {
           <div className="text-center">
             <div className="inline-block mb-4">
               <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
-                🚀 Built with Next.js, Supabase & Redux
+                🚀 Made by TobiSmile
               </span>
             </div>
             
@@ -179,7 +188,7 @@ export default function Home() {
         <footer className="mt-24 border-t border-gray-200 bg-white/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <p className="text-center text-gray-500">
-              © 2025 Legendary Heroes. Built with ❤️ using Next.js, Supabase & Redux.
+              © 2025 Legendary Heroes. Made by TobiSmile ❤️
             </p>
           </div>
         </footer>
