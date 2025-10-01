@@ -1,15 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layouts/MainLayout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { IRootState, IUser, UserStatus, UserRole } from '@/types';
-import api from '@/lib/api';
-import endpoints from '@/lib/endpoints';
 import { isAdmin, isSuperAdmin } from '@/lib/auth-middleware';
+import { 
+  getUsers, 
+  updateUserStatus, 
+  updateUserScore, 
+  updateUserRole, 
+  deleteUser as deleteUserAction,
+  clearError 
+} from '@/store/slices/usersSlice';
+import { AppDispatch } from '@/store';
 
 interface UserWithActions extends Omit<IUser, 'password'> {}
 
@@ -20,13 +28,14 @@ interface PendingChanges {
 }
 
 export default function UsersPage() {
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const { user: currentUser } = useSelector((state: IRootState) => state.auth);
-  const [users, setUsers] = useState<UserWithActions[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { users, loading, total, totalPages, error } = useSelector((state: IRootState) => state.users);
+  
+  const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
   const [statusFilter, setStatusFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
@@ -36,34 +45,25 @@ export default function UsersPage() {
   const isCurrentUserAdmin = currentUser && isAdmin(currentUser.role);
   const isCurrentUserSuperAdmin = currentUser && isSuperAdmin(currentUser.role);
 
+  // Debounce search input
   useEffect(() => {
-    fetchUsers();
-  }, [currentPage, searchTerm, statusFilter, roleFilter]);
+    const timeoutId = setTimeout(() => {
+      setSearchTerm(searchInput);
+      setCurrentPage(1); // Reset to first page when search changes
+    }, 500); // 500ms delay
 
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: limit.toString(),
-        ...(searchTerm && { search: searchTerm }),
-        ...(statusFilter && { status: statusFilter }),
-        ...(roleFilter && { role: roleFilter }),
-      });
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
 
-      const response = await api.get(`${endpoints.users.list}?${params.toString()}`);
-      
-      if (response.data.success) {
-        setUsers(response.data.data.users);
-        setTotalPages(response.data.data.pagination.totalPages);
-        setTotal(response.data.data.pagination.total);
-      }
-    } catch (error: any) {
-      console.error('Error fetching users:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    dispatch(getUsers({
+      page: currentPage,
+      limit,
+      search: searchTerm,
+      status: statusFilter,
+      role: roleFilter
+    }));
+  }, [dispatch, currentPage, searchTerm, statusFilter, roleFilter]);
 
   const handleStatusChange = (userId: string, status: UserStatus) => {
     setPendingChanges(prev => ({
@@ -137,25 +137,18 @@ export default function UsersPage() {
       
       // Update status if changed
       if (changes.status !== undefined) {
-        await api.patch(endpoints.users.updateStatus(userId), { status: changes.status });
+        await dispatch(updateUserStatus({ userId, status: changes.status })).unwrap();
       }
       
       // Update score if changed
       if (changes.score !== undefined) {
-        await api.patch(endpoints.users.updateScore(userId), { score: changes.score });
+        await dispatch(updateUserScore({ userId, score: changes.score })).unwrap();
       }
       
       // Update role if changed (superadmin only)
       if (changes.role !== undefined && isCurrentUserSuperAdmin) {
-        await api.patch(endpoints.users.updateRole(userId), { role: changes.role });
+        await dispatch(updateUserRole({ userId, role: changes.role })).unwrap();
       }
-
-      // Update local state with all changes
-      setUsers(users.map(u => 
-        u.id === userId 
-          ? { ...u, ...changes } 
-          : u
-      ));
 
       // Clear pending changes for this user
       setPendingChanges(prev => {
@@ -165,7 +158,7 @@ export default function UsersPage() {
       });
 
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to save changes');
+      alert(error || 'Failed to save changes');
     } finally {
       setUpdatingUserId(null);
     }
@@ -186,22 +179,16 @@ export default function UsersPage() {
 
     try {
       setUpdatingUserId(userId);
-      const response = await api.delete(endpoints.users.delete(userId));
+      await dispatch(deleteUserAction(userId)).unwrap();
       
-      if (response.data.success) {
-        // Remove user from local state
-        setUsers(users.filter(u => u.id !== userId));
-        // Clear any pending changes for this user
-        setPendingChanges(prev => {
-          const newChanges = { ...prev };
-          delete newChanges[userId];
-          return newChanges;
-        });
-        // Recalculate total
-        setTotal(prev => prev - 1);
-      }
+      // Clear any pending changes for this user
+      setPendingChanges(prev => {
+        const newChanges = { ...prev };
+        delete newChanges[userId];
+        return newChanges;
+      });
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to delete user');
+      alert(error || 'Failed to delete user');
     } finally {
       setUpdatingUserId(null);
     }
@@ -222,8 +209,7 @@ export default function UsersPage() {
   };
 
   const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
+    setSearchInput(value);
   };
 
   const getStatusBadgeColor = (status: UserStatus) => {
@@ -243,6 +229,10 @@ export default function UsersPage() {
       case 'member': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleUserClick = (username: string) => {
+    router.push(`/u/${username}`);
   };
 
   if (!isCurrentUserAdmin) {
@@ -281,7 +271,7 @@ export default function UsersPage() {
               <Input
                 type="text"
                 placeholder="Search by username or email..."
-                value={searchTerm}
+                value={searchInput}
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
@@ -339,9 +329,12 @@ export default function UsersPage() {
                   {users.map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
+                        <div 
+                          className="flex items-center cursor-pointer group"
+                          onClick={() => handleUserClick(user.username)}
+                        >
                           <div className="h-10 w-10 flex-shrink-0">
-                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center overflow-hidden">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center overflow-hidden group-hover:ring-2 group-hover:ring-indigo-500 transition-all">
                               {user.avatar_url ? (
                                 <img src={user.avatar_url} alt={user.username} className="h-full w-full object-cover" />
                               ) : (
@@ -350,7 +343,7 @@ export default function UsersPage() {
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{user.username}</div>
+                            <div className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">{user.username}</div>
                             <div className="text-sm text-gray-500">{user.email}</div>
                           </div>
                         </div>

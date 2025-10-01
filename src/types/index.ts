@@ -89,6 +89,7 @@ export interface IDatabase {
 // Redux store types
 export interface IRootState {
   auth: IAuthState;
+  users: IUsersState;
   // Add other slice states here
 }
 
@@ -99,6 +100,16 @@ export interface IAuthState {
   isLoading: boolean;
   isPageLoading: boolean;
   isFormLoading: boolean;
+  error: string | null;
+}
+
+export interface IUsersState {
+  users: Omit<IUser, 'password'>[];
+  total: number;
+  page: number;
+  totalPages: number;
+  loading: boolean;
+  updating: boolean;
   error: string | null;
 }
 
