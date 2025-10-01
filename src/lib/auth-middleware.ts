@@ -21,7 +21,7 @@ export async function withAuth(
 
     if (!token) {
       return NextResponse.json(
-        { success: false, error: 'No token provided', data: null },
+        { success: false, message: 'No token provided', data: null },
         { status: 401 }
       );
     }
@@ -30,7 +30,7 @@ export async function withAuth(
 
     if (!payload) {
       return NextResponse.json(
-        { success: false, error: 'Invalid or expired token', data: null },
+        { success: false, message: 'Invalid or expired token', data: null },
         { status: 401 }
       );
     }
@@ -43,7 +43,7 @@ export async function withAuth(
     const { data: user, error } = await db.getUser(payload.userId);
     if (error || !user) {
       return NextResponse.json(
-        { success: false, error: 'User not found', data: null },
+        { success: false, message: 'User not found', data: null },
         { status: 401 }
       );
     }
@@ -54,7 +54,7 @@ export async function withAuth(
   } catch (error) {
     console.error('Auth middleware error:', error);
     return NextResponse.json(
-      { success: false, error: 'Authentication failed', data: null },
+      { success: false, message: 'Authentication failed', data: null },
       { status: 401 }
     );
   }
@@ -73,7 +73,7 @@ export async function withRole(
     
     if (!user || !allowedRoles.includes(user.role)) {
       return NextResponse.json(
-        { success: false, error: 'Insufficient permissions', data: null },
+        { success: false, message: 'Insufficient permissions', data: null },
         { status: 403 }
       );
     }
@@ -115,4 +115,3 @@ export function isAdmin(role: UserRole): boolean {
 export function isSuperAdmin(role: UserRole): boolean {
   return role === 'superadmin';
 }
-

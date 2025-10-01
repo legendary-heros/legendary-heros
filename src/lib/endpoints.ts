@@ -18,6 +18,20 @@ const endpoints = {
         getByUsername: (username: string) => `/users/username/${username}`,
         vote: (id: string) => `/users/${id}/vote`,
         checkVote: (id: string) => `/users/${id}/vote`,
+    },
+    teams: {
+        list: '/teams',
+        get: (id: string) => `/teams/${id}`,
+        create: '/teams',
+        update: (id: string) => `/teams/${id}`,
+        delete: (id: string) => `/teams/${id}`,
+        myTeam: '/teams/my-team',
+        members: (id: string) => `/teams/${id}/members`,
+        uploadImage: (id: string) => `/teams/${id}/images`,
+        invitations: '/teams/invitations',
+        invitation: (id: string) => `/teams/invitations/${id}`,
+        joinRequests: '/teams/join-requests',
+        joinRequest: (id: string) => `/teams/join-requests/${id}`,
     }
 }
 

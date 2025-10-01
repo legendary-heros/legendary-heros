@@ -6,6 +6,7 @@ import { combineReducers } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import usersReducer from './slices/usersSlice';
 import userProfileReducer from './slices/userProfileSlice';
+import teamsReducer from './slices/teamsSlice';
 
 // Persist config
 const persistConfig = {
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
   auth: authReducer,
   users: usersReducer,
   userProfile: userProfileReducer,
+  teams: teamsReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

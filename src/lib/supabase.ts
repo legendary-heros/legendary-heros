@@ -1,5 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
-import type { IDatabase, IUserDB, IUserInsert, IUserUpdate } from '@/types';
+import type { 
+  IDatabase, 
+  IUserDB, 
+  IUserInsert, 
+  IUserUpdate,
+  ITeamInsert,
+  ITeamUpdate,
+  ITeamMemberInsert,
+  ITeamMemberUpdate,
+  ITeamInvitationInsert,
+  ITeamJoinRequestInsert,
+  TeamMemberRole
+} from '@/types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -168,6 +180,401 @@ export const db = {
       .eq('voted_for_id', userId);
     
     return { data, error, count };
+  },
+
+  // Teams
+  getTeams: async () => {
+    const { data, error } = await supabase
+      .from('teams')
+      .select(`
+        *,
+        leader:users!teams_leader_id_fkey(*)
+      `)
+      .order('created_at', { ascending: false });
+    
+    return { data, error };
+  },
+
+  getTeamsWithPagination: async (params: {
+    page: number;
+    limit: number;
+    search?: string;
+    status?: string;
+  }) => {
+    const { page, limit, search, status } = params;
+    const offset = (page - 1) * limit;
+
+    let query = supabase
+      .from('teams')
+      .select(`
+        *,
+        leader:users!teams_leader_id_fkey(*)
+      `, { count: 'exact' });
+
+    if (search && search.trim()) {
+      query = query.ilike('name', `%${search}%`);
+    }
+
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    query = query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
+    
+    return { data, error, count };
+  },
+
+  getTeam: async (id: string) => {
+    const { data, error } = await supabase
+      .from('teams')
+      .select(`
+        *,
+        leader:users!teams_leader_id_fkey(*)
+      `)
+      .eq('id', id)
+      .single();
+    
+    return { data, error };
+  },
+
+  getTeamBySlug: async (slug: string) => {
+    const { data, error } = await supabase
+      .from('teams')
+      .select(`
+        *,
+        leader:users!teams_leader_id_fkey(*)
+      `)
+      .eq('slug', slug)
+      .single();
+    
+    return { data, error };
+  },
+
+  getTeamByLeaderId: async (leaderId: string) => {
+    const { data, error } = await supabase
+      .from('teams')
+      .select(`
+        *,
+        leader:users!teams_leader_id_fkey(*)
+      `)
+      .eq('leader_id', leaderId)
+      .maybeSingle();
+    
+    return { data, error };
+  },
+
+  createTeam: async (teamData: ITeamInsert) => {
+    const { data, error } = await supabase
+      .from('teams')
+      // @ts-ignore
+      .insert(teamData)
+      .select(`
+        *,
+        leader:users!teams_leader_id_fkey(*)
+      `)
+      .single();
+    
+    return { data, error };
+  },
+
+  updateTeam: async (id: string, teamData: ITeamUpdate) => {
+    const { data, error } = await supabase
+      .from('teams')
+      // @ts-ignore
+      .update(teamData)
+      .eq('id', id)
+      .select(`
+        *,
+        leader:users!teams_leader_id_fkey(*)
+      `)
+      .single();
+    
+    return { data, error };
+  },
+
+  deleteTeam: async (id: string) => {
+    const { data, error } = await supabase
+      .from('teams')
+      .delete()
+      .eq('id', id);
+    
+    return { data, error };
+  },
+
+  // Team Members
+  getTeamMembers: async (teamId: string) => {
+    const { data, error } = await supabase
+      .from('team_members')
+      .select(`
+        *,
+        user:users(*)
+      `)
+      .eq('team_id', teamId)
+      .order('joined_at', { ascending: false });
+    
+    return { data, error };
+  },
+
+  getTeamMember: async (teamId: string, userId: string) => {
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('*')
+      .eq('team_id', teamId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    
+    return { data, error };
+  },
+
+  getUserTeams: async (userId: string) => {
+    const { data, error } = await supabase
+      .from('team_members')
+      .select(`
+        *,
+        team:teams(
+          *,
+          leader:users!teams_leader_id_fkey(*)
+        )
+      `)
+      .eq('user_id', userId);
+    
+    return { data, error };
+  },
+
+  addTeamMember: async (memberData: ITeamMemberInsert) => {
+    const { data, error } = await supabase
+      .from('team_members')
+      // @ts-ignore
+      .insert(memberData)
+      .select(`
+        *,
+        user:users(*)
+      `)
+      .single();
+    
+    return { data, error };
+  },
+
+  updateTeamMember: async (id: string, memberData: ITeamMemberUpdate) => {
+    const { data, error } = await supabase
+      .from('team_members')
+      // @ts-ignore
+      .update(memberData)
+      .eq('id', id)
+      .select(`
+        *,
+        user:users(*)
+      `)
+      .single();
+    
+    return { data, error };
+  },
+
+  removeTeamMember: async (teamId: string, userId: string) => {
+    const { data, error } = await supabase
+      .from('team_members')
+      .delete()
+      .eq('team_id', teamId)
+      .eq('user_id', userId);
+    
+    return { data, error };
+  },
+
+  // Update team member role
+  updateTeamMemberRole: async (memberId: string, role: TeamMemberRole) => {
+    const { data, error } = await supabase
+      .from('team_members')
+      .update({ role })
+      .eq('id', memberId);
+    
+    return { data, error };
+  },
+
+  // Team Invitations
+  getTeamInvitations: async (teamId: string) => {
+    const { data, error } = await supabase
+      .from('team_invitations')
+      .select(`
+        *,
+        team:teams(*),
+        inviter:users!team_invitations_inviter_id_fkey(*),
+        invitee:users!team_invitations_invitee_id_fkey(*)
+      `)
+      .eq('team_id', teamId)
+      .order('created_at', { ascending: false });
+    
+    return { data, error };
+  },
+
+  getUserInvitations: async (userId: string) => {
+    const { data, error } = await supabase
+      .from('team_invitations')
+      .select(`
+        *,
+        team:teams(
+          *,
+          leader:users!teams_leader_id_fkey(*)
+        ),
+        inviter:users!team_invitations_inviter_id_fkey(*),
+        invitee:users!team_invitations_invitee_id_fkey(*)
+      `)
+      .eq('invitee_id', userId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+    
+    return { data, error };
+  },
+
+  getInvitation: async (id: string) => {
+    const { data, error } = await supabase
+      .from('team_invitations')
+      .select(`
+        *,
+        team:teams(*),
+        inviter:users!team_invitations_inviter_id_fkey(*),
+        invitee:users!team_invitations_invitee_id_fkey(*)
+      `)
+      .eq('id', id)
+      .single();
+    
+    return { data, error };
+  },
+
+  checkExistingInvitation: async (teamId: string, inviteeId: string) => {
+    const { data, error } = await supabase
+      .from('team_invitations')
+      .select('*')
+      .eq('team_id', teamId)
+      .eq('invitee_id', inviteeId)
+      .eq('status', 'pending')
+      .maybeSingle();
+    
+    return { data, error };
+  },
+
+  createInvitation: async (invitationData: ITeamInvitationInsert) => {
+    const { data, error } = await supabase
+      .from('team_invitations')
+      // @ts-ignore
+      .insert(invitationData)
+      .select(`
+        *,
+        team:teams(*),
+        inviter:users!team_invitations_inviter_id_fkey(*),
+        invitee:users!team_invitations_invitee_id_fkey(*)
+      `)
+      .single();
+    
+    return { data, error };
+  },
+
+  updateInvitationStatus: async (id: string, status: 'accepted' | 'rejected') => {
+    const { data, error } = await supabase
+      .from('team_invitations')
+      .update({ status })
+      .eq('id', id)
+      .select(`
+        *,
+        team:teams(*),
+        inviter:users!team_invitations_inviter_id_fkey(*),
+        invitee:users!team_invitations_invitee_id_fkey(*)
+      `)
+      .single();
+    
+    return { data, error };
+  },
+
+  // Team Join Requests
+  getTeamJoinRequests: async (teamId: string) => {
+    const { data, error } = await supabase
+      .from('team_join_requests')
+      .select(`
+        *,
+        team:teams(*),
+        user:users(*)
+      `)
+      .eq('team_id', teamId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+    
+    return { data, error };
+  },
+
+  getUserJoinRequests: async (userId: string) => {
+    const { data, error } = await supabase
+      .from('team_join_requests')
+      .select(`
+        *,
+        team:teams(
+          *,
+          leader:users!teams_leader_id_fkey(*)
+        ),
+        user:users(*)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    
+    return { data, error };
+  },
+
+  getJoinRequest: async (id: string) => {
+    const { data, error } = await supabase
+      .from('team_join_requests')
+      .select(`
+        *,
+        team:teams(*),
+        user:users(*)
+      `)
+      .eq('id', id)
+      .single();
+    
+    return { data, error };
+  },
+
+  checkExistingJoinRequest: async (teamId: string, userId: string) => {
+    const { data, error } = await supabase
+      .from('team_join_requests')
+      .select('*')
+      .eq('team_id', teamId)
+      .eq('user_id', userId)
+      .eq('status', 'pending')
+      .maybeSingle();
+    
+    return { data, error };
+  },
+
+  createJoinRequest: async (requestData: ITeamJoinRequestInsert) => {
+    const { data, error } = await supabase
+      .from('team_join_requests')
+      // @ts-ignore
+      .insert(requestData)
+      .select(`
+        *,
+        team:teams(*),
+        user:users(*)
+      `)
+      .single();
+    
+    return { data, error };
+  },
+
+  updateJoinRequestStatus: async (id: string, status: 'approved' | 'rejected') => {
+    const { data, error } = await supabase
+      .from('team_join_requests')
+      .update({ status })
+      .eq('id', id)
+      .select(`
+        *,
+        team:teams(*),
+        user:users(*)
+      `)
+      .single();
+    
+    return { data, error };
   },
 };
 

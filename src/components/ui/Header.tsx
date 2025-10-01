@@ -118,7 +118,7 @@ export function Header({
               <div className="flex items-center space-x-4">
                 <div className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-lg">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm text-gray-700">{user?.email}</span>
+                  <span className="text-sm text-gray-700">{user?.username}</span>
                 </div>
                 <Button 
                   onClick={handleSignOut} 
