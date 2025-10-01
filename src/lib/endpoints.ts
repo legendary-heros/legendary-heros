@@ -4,6 +4,10 @@ const endpoints = {
         signUp: '/auth/signup',
         signOut: '/auth/signout',
         getSession: '/auth/session',
+    },
+    profile: {
+        update: '/profile',
+        uploadAvatar: '/profile/avatar',
     }
 }
 

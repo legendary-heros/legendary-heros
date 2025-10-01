@@ -15,6 +15,7 @@ CREATE TABLE users (
   score TEXT DEFAULT '0',
   vote_count TEXT DEFAULT '0',
   bio TEXT,
+  avatar_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

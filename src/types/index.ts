@@ -15,6 +15,7 @@ export interface IUserDB {
   score: string;
   vote_count: string;
   bio?: string | null;
+  avatar_url?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -31,6 +32,7 @@ export interface IUser {
   score: string;
   vote_count: string;
   bio?: string | null;
+  avatar_url?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -59,6 +61,7 @@ export interface IUserUpdate {
   score?: string;
   vote_count?: string;
   bio?: string;
+  avatar_url?: string;
 }
 
 export interface IDatabase {
@@ -117,4 +120,14 @@ export interface ISignupForm {
   password: string;
   confirmPassword: string;
   username: string;
+}
+
+export interface IProfileForm {
+  username: string;
+  email: string;
+  slackname?: string;
+  dotaname?: string;
+  bio?: string;
+  password?: string;
+  confirmPassword?: string;
 }

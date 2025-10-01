@@ -57,28 +57,23 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ### 3. Supabase Setup
 
 1. Create a new project at [supabase.com](https://supabase.com)
-2. Run the following SQL in your Supabase SQL editor to create the users table:
+2. Run the database migration SQL from `src/lib/db/migrate.sql` in your Supabase SQL editor
+3. Run the storage setup SQL from `src/lib/db/storage-setup.sql` to create the storage bucket for avatars
+4. Add a JWT secret to your environment variables:
 
-```sql
--- Create users table
-CREATE TABLE users (
-  id UUID REFERENCES auth.users(id) PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Enable Row Level Security
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-
--- Create policy for users to see their own data
-CREATE POLICY "Users can view own profile" ON users
-  FOR SELECT USING (auth.uid() = id);
-
--- Create policy for users to update their own data
-CREATE POLICY "Users can update own profile" ON users
-  FOR UPDATE USING (auth.uid() = id);
+```env
+JWT_SECRET=your_jwt_secret_key
 ```
+
+The migration will create:
+- Users table with all required fields (username, email, bio, avatar_url, etc.)
+- User status and role enums
+- Necessary indexes for performance
+- Auto-update trigger for updated_at column
+
+The storage setup will create:
+- A public storage bucket named `user-assets`
+- Policies for avatar upload, read, update, and delete
 
 ### 4. Run the Development Server
 
@@ -121,30 +116,49 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 ## 📝 Key Features
 
-- ✅ **Authentication**: Sign up, sign in, sign out
+- ✅ **Authentication**: Sign up, sign in, sign out with JWT tokens
+- ✅ **User Profiles**: Complete profile management with avatar upload
+- ✅ **Avatar Upload**: Image upload with validation (5MB limit, multiple formats)
 - ✅ **State Persistence**: Auth state survives page reloads
 - ✅ **Type Safety**: Full TypeScript coverage
 - ✅ **Responsive Design**: Mobile-first approach
-- ✅ **Form Validation**: Client-side validation with Zod
+- ✅ **Form Validation**: Client-side validation
 - ✅ **Error Handling**: Comprehensive error management
 - ✅ **Scalable Structure**: Easy to extend and maintain
+
+## 🎯 Profile Management
+
+The profile page allows users to:
+- **Update personal information**: Username, email, Slack name, Dota name, and bio
+- **Upload avatar**: Support for JPEG, PNG, GIF, and WebP formats (max 5MB)
+- **Change password**: Optional password update with confirmation
+- **Real-time preview**: See avatar changes before saving
+
+### Profile Fields
+- **Username**: Unique identifier for the user
+- **Email**: User's email address
+- **Slack Name**: Optional Slack username
+- **Dota Name**: Optional Dota 2 username
+- **Bio**: Personal description (textarea)
+- **Avatar**: Profile picture stored in Supabase Storage
 
 ## 🚀 Next Steps
 
 This foundation provides:
-- User authentication system
-- Basic UI components
-- Redux state management
-- Supabase integration
-- Type-safe development environment
+- ✅ User authentication system with JWT
+- ✅ Complete profile management
+- ✅ Avatar upload and storage
+- ✅ Basic UI components
+- ✅ Redux state management
+- ✅ Supabase integration
+- ✅ Type-safe development environment
 
 You can now build upon this structure to add:
-- User profiles
-- File uploads
 - Real-time subscriptions
-- Protected routes
+- Team management features
+- Advanced analytics
 - Additional data models
-- API endpoints
+- More API endpoints
 
 ## 📚 Documentation
 

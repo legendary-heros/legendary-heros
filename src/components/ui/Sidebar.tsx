@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSelector } from 'react-redux';
 import { Path, RouteTitle } from '@/constants/enums';
+import { IRootState } from '@/types';
 
 interface NavItem {
   name: string;
@@ -40,15 +42,6 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    name: RouteTitle.Profile,
-    href: Path.Profile,
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-    ),
-  },
-  {
     name: RouteTitle.Settings,
     href: Path.Settings,
     icon: (
@@ -63,6 +56,7 @@ const navItems: NavItem[] = [
 export function Sidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { user } = useSelector((state: IRootState) => state.auth);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -174,17 +168,33 @@ export function Sidebar() {
 
         {/* Bottom Section - User Info */}
         <div className="border-t border-gray-200 p-4">
-          <div className="flex items-center space-x-3 px-3 py-2 bg-gray-50 rounded-lg">
-            <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
+          <Link 
+            href={Path.Profile}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center space-x-3 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+          >
+            <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center overflow-hidden">
+              {user?.avatar_url ? (
+                <img 
+                  src={user.avatar_url} 
+                  alt={user.username || 'User'} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">User Account</p>
-              <p className="text-xs text-gray-500 truncate">View profile</p>
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {user?.username || 'User Account'}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user?.email || 'View profile'}
+              </p>
             </div>
-          </div>
+          </Link>
         </div>
       </aside>
     </>

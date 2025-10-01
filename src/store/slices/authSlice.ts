@@ -87,6 +87,39 @@ export const checkAuthStatus = createAsyncThunk(
   }
 );
 
+// Update profile
+export const updateProfile = createAsyncThunk(
+  'auth/updateProfile',
+  async (profileData: { username?: string; email?: string; slackname?: string; dotaname?: string; bio?: string; password?: string; avatar_url?: string }, { rejectWithValue }) => {
+    try {
+      const response = await api.put(endpoints.profile.update, profileData);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to update profile');
+    }
+  }
+);
+
+// Upload avatar
+export const uploadAvatar = createAsyncThunk(
+  'auth/uploadAvatar',
+  async (file: File, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      
+      const response = await api.post(endpoints.profile.uploadAvatar, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to upload avatar');
+    }
+  }
+);
+
 const initialState: IAuthState = {
   user: null,
   token: typeof window !== 'undefined' ? localStorage.getItem('legendary_token') : null,
@@ -215,6 +248,37 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.user = null;
         state.token = null;
+      });
+
+    // Update Profile
+    builder
+      .addCase(updateProfile.pending, (state) => {
+        state.isFormLoading = true;
+        state.error = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.isFormLoading = false;
+        state.user = action.payload.data?.user as IUser || state.user;
+        state.error = null;
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.isFormLoading = false;
+        state.error = (action?.payload as any)?.message || 'Failed to update profile';
+      });
+
+    // Upload Avatar
+    builder
+      .addCase(uploadAvatar.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(uploadAvatar.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(uploadAvatar.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = (action?.payload as any)?.message || 'Failed to upload avatar';
       });
   },
 });
