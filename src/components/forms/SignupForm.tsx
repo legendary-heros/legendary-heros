@@ -50,7 +50,7 @@ export default function SignupForm() {
     if (signUp.fulfilled.match(result)) {
       setSuccess(true);
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push('/signin');
       }, 1500);
     }
   };
@@ -65,7 +65,7 @@ export default function SignupForm() {
             </svg>
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-2">Account Created!</h3>
-          <p className="text-gray-600">Redirecting to your dashboard...</p>
+          <p className="text-gray-600">Redirecting to your signin...</p>
         </div>
       </div>
     );

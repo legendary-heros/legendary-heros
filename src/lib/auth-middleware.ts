@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, extractTokenFromHeader } from './jwt';
 import { db } from './supabase';
+import type { IUserDB, UserRole } from '@/types';
 
 export interface AuthRequest extends NextRequest {
   userId?: string;
-  user?: any;
+  user?: IUserDB;
 }
 
 /**
@@ -59,4 +60,59 @@ export async function withAuth(
   }
 }
 
+/**
+ * Middleware to check if user has required role
+ */
+export async function withRole(
+  request: NextRequest,
+  allowedRoles: UserRole[],
+  handler: (req: AuthRequest) => Promise<NextResponse>
+): Promise<NextResponse> {
+  return withAuth(request, async (req) => {
+    const user = req.user;
+    
+    if (!user || !allowedRoles.includes(user.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions', data: null },
+        { status: 403 }
+      );
+    }
+
+    return handler(req);
+  });
+}
+
+/**
+ * Middleware for admin-only routes (superadmin and admin)
+ */
+export async function withAdmin(
+  request: NextRequest,
+  handler: (req: AuthRequest) => Promise<NextResponse>
+): Promise<NextResponse> {
+  return withRole(request, ['superadmin', 'admin'], handler);
+}
+
+/**
+ * Middleware for superadmin-only routes
+ */
+export async function withSuperAdmin(
+  request: NextRequest,
+  handler: (req: AuthRequest) => Promise<NextResponse>
+): Promise<NextResponse> {
+  return withRole(request, ['superadmin'], handler);
+}
+
+/**
+ * Helper function to check if user is admin or superadmin
+ */
+export function isAdmin(role: UserRole): boolean {
+  return role === 'admin' || role === 'superadmin';
+}
+
+/**
+ * Helper function to check if user is superadmin
+ */
+export function isSuperAdmin(role: UserRole): boolean {
+  return role === 'superadmin';
+}
 

@@ -26,6 +26,45 @@ export const db = {
     
     return { data, error };
   },
+
+  getUsersWithPagination: async (params: {
+    page: number;
+    limit: number;
+    search?: string;
+    status?: string;
+    role?: string;
+  }) => {
+    const { page, limit, search, status, role } = params;
+    const offset = (page - 1) * limit;
+
+    let query = supabase
+      .from('users')
+      .select('*', { count: 'exact' });
+
+    // Apply search filter
+    if (search && search.trim()) {
+      query = query.or(`username.ilike.%${search}%,email.ilike.%${search}%`);
+    }
+
+    // Apply status filter
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    // Apply role filter
+    if (role) {
+      query = query.eq('role', role);
+    }
+
+    // Apply pagination and ordering
+    query = query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
+    
+    return { data, error, count };
+  },
   
   getUser: async (id: string) => {
     const { data, error } = await supabase

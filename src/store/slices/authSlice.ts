@@ -9,10 +9,6 @@ export const signUp = createAsyncThunk(
   async ({ email, password, username }: { email: string; password: string; username: string }, { rejectWithValue }) => {
     try { 
       const response = await api.post(endpoints.auth.signUp, { email, password, username });
-      // Store token in localStorage
-      if (response.data.data?.token) {
-        localStorage.setItem('legendary_token', response.data.data.token);
-      }
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || 'Sign up failed');
@@ -169,9 +165,6 @@ const authSlice = createSlice({
       })
       .addCase(signUp.fulfilled, (state, action) => {
         state.isFormLoading = false;
-        state.user = action.payload.data?.user as IUser;
-        state.token = action.payload.data?.token;
-        state.isAuthenticated = !!action.payload.data?.user;
         state.error = null;
       })
       .addCase(signUp.rejected, (state, action) => {
