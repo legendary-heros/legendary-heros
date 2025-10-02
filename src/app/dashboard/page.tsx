@@ -11,6 +11,7 @@ import { fetchMyTeam } from '@/store/slices/teamsSlice';
 import { getUsers } from '@/store/slices/usersSlice';
 import { fetchTeams } from '@/store/slices/teamsSlice';
 import { StarRating } from '@/components/ui/StarRating';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
@@ -77,10 +78,18 @@ export default function DashboardPage() {
                 <p className="text-indigo-100 text-lg">Ready to dominate the battlefield?</p>
               </div>
               <div className="hidden md:block">
-                <div className="w-24 h-24 bg-white/20 rounded-2xl backdrop-blur-sm flex items-center justify-center">
-                  <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                <div className="w-24 h-24 bg-white/20 rounded-2xl backdrop-blur-sm flex items-center justify-center overflow-hidden">
+                  {user?.avatar_url ? (
+                    <img 
+                      src={user.avatar_url} 
+                      alt={user.username} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
                 </div>
                 </div>
               </div>
@@ -91,12 +100,20 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* User Score & Level Card */}
           <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader className="border-b border-gray-100">
+              <CardHeader className="border-b border-gray-100">
                 <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center overflow-hidden">
+                  {user?.avatar_url ? (
+                    <img 
+                      src={user.avatar_url} 
+                      alt={user.username} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
+                  )}
                   </div>
                   <div>
                   <CardTitle className="text-2xl">Your Power Level</CardTitle>
@@ -161,10 +178,18 @@ export default function DashboardPage() {
             <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 bg-gradient-to-br from-purple-50 to-pink-50">
               <CardHeader className="border-b border-gray-100">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center overflow-hidden">
+                    {myTeam.mark_url ? (
+                      <img 
+                        src={myTeam.mark_url} 
+                        alt={myTeam.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    )}
                   </div>
                   <div>
                     <CardTitle className="text-2xl">Team Power</CardTitle>
@@ -212,7 +237,7 @@ export default function DashboardPage() {
             <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 bg-gradient-to-br from-gray-50 to-slate-50">
               <CardHeader className="border-b border-gray-100">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-slate-600 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-slate-600 rounded-xl flex items-center justify-center overflow-hidden">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
@@ -263,13 +288,26 @@ export default function DashboardPage() {
                     <div key={topUser.id} className="bg-white rounded-xl p-4 border border-gray-100 hover:shadow-lg transition-all duration-300">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                            index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
-                            index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-400' :
-                            index === 2 ? 'bg-gradient-to-r from-amber-600 to-amber-700' :
-                            'bg-gradient-to-r from-blue-500 to-blue-600'
-                          }`}>
-                            {index + 1}
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                              index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
+                              index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-400' :
+                              index === 2 ? 'bg-gradient-to-r from-amber-600 to-amber-700' :
+                              'bg-gradient-to-r from-blue-500 to-blue-600'
+                            }`}>
+                             {index + 1}
+                            </div>
+                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                              {topUser.avatar_url ? (
+                                <img 
+                                  src={topUser.avatar_url} 
+                                  alt={topUser.username} 
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-white font-bold text-sm">{topUser.username.charAt(0).toUpperCase()}</span>
+                              )}
+                            </div>
                           </div>
                           <div>
                             <div className="font-semibold text-gray-900">{topUser.username}</div>
@@ -315,13 +353,26 @@ export default function DashboardPage() {
                     <div key={topTeam.id} className="bg-white rounded-xl p-4 border border-gray-100 hover:shadow-lg transition-all duration-300">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                            index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
-                            index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-400' :
-                            index === 2 ? 'bg-gradient-to-r from-amber-600 to-amber-700' :
-                            'bg-gradient-to-r from-green-500 to-green-600'
-                          }`}>
-                            {index + 1}
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                              index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
+                              index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-400' :
+                              index === 2 ? 'bg-gradient-to-r from-amber-600 to-amber-700' :
+                              'bg-gradient-to-r from-green-500 to-green-600'
+                            }`}>
+                              {index + 1}
+                            </div>
+                            <div className="w-10 h-10 rounded-lg overflow-hidden bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                              {topTeam.mark_url ? (
+                                <img 
+                                  src={topTeam.mark_url} 
+                                  alt={topTeam.name} 
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-white font-bold text-sm">{topTeam.name.charAt(0).toUpperCase()}</span>
+                              )}
+                            </div>
                           </div>
                           <div>
                             <div className="font-semibold text-gray-900">{topTeam.name}</div>
@@ -342,6 +393,76 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Notifications */}
+        <Card className="shadow-xl">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                    🔔 Match Results & Updates
+                  </CardTitle>
+                  <CardDescription>
+                    Latest match results and team achievements
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Point System Info */}
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-l-4 border-blue-500">
+                      <h4 className="font-semibold text-blue-900 mb-2">🏆 Point System</h4>
+                      <div className="space-y-1 text-sm text-blue-800">
+                        <div>🥇 1st Place: <span className="font-bold">10 points</span></div>
+                        <div>🥈 2nd Place: <span className="font-bold">8 points</span></div>
+                        <div>🥉 3rd Place: <span className="font-bold">6 points</span></div>
+                        <div>🏆 Team Win: <span className="font-bold">20 points</span></div>
+                      </div>
+                    </div>
+
+                    {/* Sample Notifications */}
+                    <div className="space-y-3">
+                      <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-l-4 border-green-500">
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-600">🏆</span>
+                          <div>
+                            <p className="text-sm font-medium text-green-900">Team Victory!</p>
+                            <p className="text-xs text-green-700">Dragon Warriors won their latest match</p>
+                            <p className="text-xs text-green-600">+20 points awarded</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border-l-4 border-yellow-500">
+                        <div className="flex items-center gap-2">
+                          <span className="text-yellow-600">🥇</span>
+                          <div>
+                            <p className="text-sm font-medium text-yellow-900">Match Results</p>
+                            <p className="text-xs text-yellow-700">PlayerX secured 1st place</p>
+                            <p className="text-xs text-yellow-600">+10 points earned</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-l-4 border-purple-500">
+                        <div className="flex items-center gap-2">
+                          <span className="text-purple-600">📈</span>
+                          <div>
+                            <p className="text-sm font-medium text-purple-900">Level Up!</p>
+                            <p className="text-xs text-purple-700">PhoenixRising reached Elite status</p>
+                            <p className="text-xs text-purple-600">Congratulations!</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <Link href="/legendary-heroes">
+                        <Button variant="outline" className="w-full">
+                          View All Heroes
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
         {/* Quick Actions */}
         <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 bg-gradient-to-br from-indigo-50 to-purple-50">
