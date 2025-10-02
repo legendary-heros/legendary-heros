@@ -3,10 +3,10 @@ import { storage } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth-middleware';
 import { db } from '@/lib/supabase';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     return withAuth(req, async (req) => {
         try {
-            const teamId = params.id;
+            const { id: teamId } = await params;
             const userId = req.user?.id;
             const formData = await req.formData();
             const file = formData.get('image') as File;
