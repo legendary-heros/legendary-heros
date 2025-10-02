@@ -109,12 +109,14 @@ export interface IAuthState {
 }
 
 export interface IUsersState {
-  users: Omit<IUser, 'password'>[];
+  users: IUserWithTeam[];
   total: number;
   page: number;
   totalPages: number;
   loading: boolean;
   updating: boolean;
+  loadingMore: boolean;
+  hasMore: boolean;
   error: string | null;
 }
 

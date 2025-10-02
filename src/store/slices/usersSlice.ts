@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 import endpoints from '@/lib/endpoints';
-import type { IUser, UserStatus, UserRole } from '@/types';
+import type { IUser, IUserWithTeam, UserStatus, UserRole } from '@/types';
 import { cache } from '@/utils/cacheUtils';
 
 export const CACHE_PAGE_NAME = 'users_management';
@@ -12,15 +12,20 @@ export interface UsersQueryParams {
     search?: string;
     status?: string;
     role?: string;
+    team?: string;
+    teamRole?: string;
+    append?: boolean; // For infinite scrolling
 }
 
 export interface UsersState {
-    users: Omit<IUser, 'password'>[];
+    users: IUserWithTeam[];
     total: number;
     page: number;
     totalPages: number;
     loading: boolean;
     updating: boolean;
+    loadingMore: boolean;
+    hasMore: boolean;
     error: string | null;
 }
 
@@ -31,6 +36,8 @@ const initialState: UsersState = {
     totalPages: 1,
     loading: false,
     updating: false,
+    loadingMore: false,
+    hasMore: true,
     error: null
 };
 
@@ -43,12 +50,16 @@ export const getUsers = createAsyncThunk(
                 limit: params.limit,
                 search: params.search || '',
                 status: params.status || '',
-                role: params.role || ''
+                role: params.role || '',
+                team: params.team || '',
+                teamRole: params.teamRole || ''
             };
 
-            // Check cache first
-            const cachedData = cache.get(CACHE_PAGE_NAME, cacheKey);
-            if (cachedData) return cachedData;
+            // Check cache first (only for non-append requests)
+            if (!params.append) {
+                const cachedData = cache.get(CACHE_PAGE_NAME, cacheKey);
+                if (cachedData) return cachedData;
+            }
 
             const queryParams = new URLSearchParams({
                 page: params.page.toString(),
@@ -56,6 +67,8 @@ export const getUsers = createAsyncThunk(
                 ...(params.search && { search: params.search }),
                 ...(params.status && { status: params.status }),
                 ...(params.role && { role: params.role }),
+                ...(params.team && { team: params.team }),
+                ...(params.teamRole && { teamRole: params.teamRole }),
             });
 
             const response = await api.get(`${endpoints.users.list}?${queryParams.toString()}`);
@@ -64,11 +77,14 @@ export const getUsers = createAsyncThunk(
                 users: response.data.data.users,
                 total: response.data.data.pagination.total,
                 page: response.data.data.pagination.page,
-                totalPages: response.data.data.pagination.totalPages
+                totalPages: response.data.data.pagination.totalPages,
+                append: params.append || false
             };
 
-            // Cache the result
-            cache.set(CACHE_PAGE_NAME, cacheKey, result);
+            // Cache the result (only for non-append requests)
+            if (!params.append) {
+                cache.set(CACHE_PAGE_NAME, cacheKey, result);
+            }
 
             return result;
         } catch (error: any) {
@@ -142,24 +158,47 @@ const usersSlice = createSlice({
         },
         clearCache: () => {
             cache.clearByPage(CACHE_PAGE_NAME);
+        },
+        resetUsers: (state) => {
+            state.users = [];
+            state.page = 1;
+            state.hasMore = true;
+            state.loading = false;
+            state.loadingMore = false;
+            state.error = null;
         }
     },
     extraReducers: (builder) => {
         builder
             // Get Users
             .addCase(getUsers.pending, (state) => {
-                state.loading = true;
+                if (state.users.length === 0) {
+                    state.loading = true;
+                } else {
+                    state.loadingMore = true;
+                }
                 state.error = null;
             })
             .addCase(getUsers.fulfilled, (state, action: any) => {
                 state.loading = false;
-                state.users = action.payload.users;
+                state.loadingMore = false;
+                
+                if (action.payload.append) {
+                    // Append to existing users for infinite scroll
+                    state.users = [...state.users, ...action.payload.users];
+                } else {
+                    // Replace users for new search/filter
+                    state.users = action.payload.users;
+                }
+                
                 state.total = action.payload.total;
                 state.page = action.payload.page;
                 state.totalPages = action.payload.totalPages;
+                state.hasMore = action.payload.page < action.payload.totalPages;
             })
             .addCase(getUsers.rejected, (state, action) => {
                 state.loading = false;
+                state.loadingMore = false;
                 state.error = action.payload as string;
             })
             // Update Status
@@ -230,6 +269,6 @@ const usersSlice = createSlice({
     }
 });
 
-export const { clearError, clearCache } = usersSlice.actions;
+export const { clearError, clearCache, resetUsers } = usersSlice.actions;
 export default usersSlice.reducer;
 

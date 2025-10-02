@@ -3,13 +3,9 @@ export enum Path {
     SignUp = '/signup',
     Profile = '/profile',
     Dashboard = '/dashboard',
-    Settings = '/settings',
-    Analytics = '/analytics',
+    LegendaryHeroes = '/legendary-heroes',
     Team = '/team',
     Users = '/users',
-    Projects = '/projects',
-    Documentation = '/docs',
-    Help = '/help',
 }
   
 export enum RouteTitle {
@@ -17,11 +13,7 @@ export enum RouteTitle {
     SignUp = 'Sign Up',
     Profile = 'Profile',
     Dashboard = 'Dashboard',
-    Settings = 'Settings',
-    Analytics = 'Analytics',
+    LegendaryHeroes = 'Legendary Heroes',
     Team = 'Team',
     Users = 'Users',
-    Projects = 'Projects',
-    Documentation = 'Documentation',
-    Help = 'Help & Support',
 }
