@@ -65,6 +65,9 @@ export async function PATCH(
         );
       }
 
+      // Type assertion to help TypeScript understand the team structure
+      const teamData = team as ITeamWithLeader;
+
       // Update team score
       const { data: updatedTeam, error } = await db.updateTeam(id, {
         score: scoreNumber.toString()
@@ -82,7 +85,7 @@ export async function PATCH(
       }
 
       // Log the score change for audit purposes
-      console.log(`Admin ${user.username} (${user.id}) updated team ${id} score from ${team.score} to ${scoreNumber}${reason ? ` - Reason: ${reason}` : ''}`);
+      console.log(`Admin ${user.username} (${user.id}) updated team ${id} score from ${teamData.score} to ${scoreNumber}${reason ? ` - Reason: ${reason}` : ''}`);
 
       return NextResponse.json<IApiResponse<ITeamWithLeader>>({
         success: true,
@@ -124,6 +127,9 @@ export async function GET(
         );
       }
 
+      // Type assertion to help TypeScript understand the team structure
+      const teamData = team as ITeamWithLeader;
+
       // For now, return current score and team info
       // In a real implementation, you might want to track score history
       return NextResponse.json<IApiResponse<{
@@ -134,9 +140,9 @@ export async function GET(
         success: true,
         message: 'Team score information retrieved',
         data: {
-          currentScore: team.score,
-          team: team as ITeamWithLeader,
-          lastUpdated: team.updated_at,
+          currentScore: teamData.score,
+          team: teamData,
+          lastUpdated: teamData.updated_at,
         },
       });
     } catch (error: any) {

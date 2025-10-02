@@ -37,8 +37,11 @@ export async function PATCH(
         );
       }
 
+      // Type assertion to help TypeScript understand the user structure
+      const userData = targetUser as IUserDB;
+
       // Admins cannot change score of other admins or superadmins
-      if (req.user?.role === 'admin' && (targetUser.role === 'admin' || targetUser.role === 'superadmin')) {
+      if (req.user?.role === 'admin' && (userData.role === 'admin' || userData.role === 'superadmin')) {
         return NextResponse.json(
           { success: false, message: 'Admins cannot change the score of other admins', data: null },
           { status: 403 }

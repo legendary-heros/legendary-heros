@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth-middleware';
-import type { IApiResponse, ITeamJoinRequestWithDetails } from '@/types';
+import type { IApiResponse, ITeamJoinRequestWithDetails, ITeamWithLeader } from '@/types';
 
 // GET /api/teams/join-requests - Get user's join requests or team's join requests
 export async function GET(request: NextRequest) {
@@ -30,7 +30,10 @@ export async function GET(request: NextRequest) {
             );
           }
 
-          if (team.leader_id !== user.id) {
+          // Type assertion to help TypeScript understand the team structure
+          const teamData = team as ITeamWithLeader;
+
+          if (teamData.leader_id !== user.id) {
             return NextResponse.json<IApiResponse>(
               {
                 success: false,
@@ -114,8 +117,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Type assertion to help TypeScript understand the team structure
+    const teamData = team as ITeamWithLeader;
+
     // Check if team is approved
-    if (team.status !== 'approved') {
+    if (teamData.status !== 'approved') {
       return NextResponse.json<IApiResponse>(
         {
           success: false,

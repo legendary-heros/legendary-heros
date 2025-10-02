@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/auth-middleware';
 import { db } from '@/lib/supabase';
 import { hashPassword } from '@/lib/password';
+import { IUserDB } from '@/types';
 
 export async function PUT(req: NextRequest) {
     return withAuth(req, async (req) => {
@@ -40,7 +41,7 @@ export async function PUT(req: NextRequest) {
 
             // Remove password from response
             if (updatedUser) {
-                const { password: _, ...userWithoutPassword } = updatedUser;
+                const { password: _, ...userWithoutPassword } = updatedUser as IUserDB;
                 
                 return NextResponse.json({
                     success: true,

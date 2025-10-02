@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/auth-middleware';
 import { db } from '@/lib/supabase';
+import type { IUserDB } from '@/types';
 
 export async function POST(
   request: NextRequest,
@@ -58,6 +59,9 @@ export async function POST(
         );
       }
 
+      // Type assertion to help TypeScript understand the user structure
+      const userData = user as IUserDB;
+
       // Create the vote record
       const { error: voteError } = await db.createVote(voterId, userId);
 
@@ -72,8 +76,8 @@ export async function POST(
       }
 
       // Calculate new values
-      const currentVoteCount = parseInt(user.vote_count) || 0;
-      const currentScore = parseInt(user.score) || 0;
+      const currentVoteCount = parseInt(userData.vote_count) || 0;
+      const currentScore = parseInt(userData.score) || 0;
       const newVoteCount = currentVoteCount + 1;
       const newScore = currentScore + 5; // Each vote adds 5 points to the score
 
