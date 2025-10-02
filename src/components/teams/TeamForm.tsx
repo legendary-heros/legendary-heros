@@ -115,6 +115,7 @@ export const TeamForm: React.FC<TeamFormProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <ImageUpload
+            className='flex flex-col items-center justify-center'
             currentImage={formData.mark_url}
             onImageChange={(file, preview) => {
               setMarkFile(file);
@@ -138,6 +139,7 @@ export const TeamForm: React.FC<TeamFormProps> = ({
 
         <div>
           <ImageUpload
+            className='flex flex-col items-center justify-center'
             currentImage={formData.ad_url}
             onImageChange={(file, preview) => {
               setAdFile(file);
@@ -160,8 +162,8 @@ export const TeamForm: React.FC<TeamFormProps> = ({
         </div>
       </div>
 
-      <div className="flex gap-3 pt-4">
-        <Button type="submit" disabled={isLoading} className="flex-1">
+      <div className="flex gap-3 pt-4 justify-end">
+        <Button type="submit" disabled={isLoading} className='' >
           {isLoading ? 'Saving...' : team ? 'Update Team' : 'Create Team'}
         </Button>
         {onCancel && (

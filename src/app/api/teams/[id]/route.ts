@@ -199,6 +199,32 @@ export async function DELETE(
         );
       }
 
+      // Check if team has members (excluding the leader)
+      const { data: teamMembers, error: membersError } = await db.getTeamMembers(params.id);
+      
+      if (membersError) {
+        return NextResponse.json<IApiResponse>(
+          {
+            success: false,
+            message: 'Failed to check team members',
+            data: null,
+          },
+          { status: 500 }
+        );
+      }
+
+      // If team has more than 1 member (leader + others), prevent deletion
+      if (teamMembers && teamMembers.length > 1) {
+        return NextResponse.json<IApiResponse>(
+          {
+            success: false,
+            message: 'Cannot delete team with active members. Please remove all members first.',
+            data: null,
+          },
+          { status: 400 }
+        );
+      }
+
       const { error } = await db.deleteTeam(params.id);
 
       if (error) {

@@ -210,13 +210,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Add leader as team member
+      // Note: Leader is already tracked via leader_id field in teams table
+      // No need to add them to team_members table to avoid double counting
       const createdTeam = team as ITeamWithLeader;
-      await db.addTeamMember({
-        team_id: createdTeam.id,
-        user_id: user.id,
-        role: 'leader',
-      });
 
       // Upload images if provided
       let markUrl: string | null = null;

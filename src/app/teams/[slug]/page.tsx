@@ -55,6 +55,7 @@ export default function TeamDetailPage() {
           }
         }
       } catch (err) {
+        router.push('/teams');
         console.error('Failed to load team:', err);
       }
     };
@@ -84,8 +85,21 @@ export default function TeamDetailPage() {
 
   const isLeader = user?.id === currentTeam.leader_id;
   const isAdmin = user && ['admin', 'superadmin'].includes(user.role);
-  const isMember = teamMembers.some(m => m.user_id === user?.id);
+  const isMember = teamMembers.some(m => m.user_id === user?.id) || isLeader;
   const canEdit = (isLeader || isAdmin) && currentTeam.status !== 'blocked';
+  
+  // Create a combined members list that includes the leader at the top
+  const allMembers = currentTeam.leader ? [
+    {
+      id: 'leader-' + currentTeam.leader_id,
+      team_id: currentTeam.id,
+      user_id: currentTeam.leader_id,
+      role: 'leader' as const,
+      joined_at: currentTeam.created_at,
+      user: currentTeam.leader
+    },
+    ...teamMembers
+  ] : teamMembers;
 
   const handleUpdateTeam = async (data: any) => {
     try {
@@ -349,7 +363,7 @@ export default function TeamDetailPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Members ({teamMembers.length})
+                Members ({allMembers.length})
               </button>
               {isLeader && (
                 <>
@@ -403,7 +417,7 @@ export default function TeamDetailPage() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {teamMembers.map((member) => (
+              {allMembers.map((member) => (
                 <MemberCard
                   key={member.id}
                   member={member}
@@ -474,7 +488,7 @@ export default function TeamDetailPage() {
                     <h4 className="font-medium mb-3">Available Users</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-96 overflow-y-auto">
                       {users
-                        .filter(u => !teamMembers.some(m => m.user_id === u.id))
+                        .filter(u => !teamMembers.some(m => m.user_id === u.id) && u.id !== currentTeam.leader_id)
                         .map((u) => (
                           <button
                             key={u.id}
