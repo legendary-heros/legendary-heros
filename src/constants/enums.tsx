@@ -5,6 +5,7 @@ export enum Path {
     Dashboard = '/dashboard',
     LegendaryHeroes = '/legendary-heroes',
     Team = '/team',
+    Teams = '/teams',
     Users = '/users',
 }
   
@@ -15,5 +16,6 @@ export enum RouteTitle {
     Dashboard = 'Dashboard',
     LegendaryHeroes = 'Legendary Heroes',
     Team = 'Team',
+    Teams = 'Teams',
     Users = 'Users',
 }

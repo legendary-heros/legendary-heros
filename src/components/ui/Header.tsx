@@ -14,13 +14,17 @@ const getPageTitle = (pathname: string): string => {
     const pathToTitle: Record<string, string> = {
       [Path.Dashboard]: RouteTitle.Dashboard,
       [Path.Profile]: RouteTitle.Profile,
-      [Path.Settings]: RouteTitle.Settings,
-      [Path.Analytics]: RouteTitle.Analytics,
       [Path.Team]: RouteTitle.Team,
+      [Path.Teams]: RouteTitle.Teams,
       [Path.Users]: RouteTitle.Users,
-      [Path.Documentation]: RouteTitle.Documentation,
-      [Path.Help]: RouteTitle.Help,
+      [Path.LegendaryHeroes]: RouteTitle.LegendaryHeroes,
     };
+
+    if (pathname.includes('/teams/')) {
+      return RouteTitle.Teams;
+    } else if (pathname.includes('/u/')) {
+      return RouteTitle.Users;
+    } 
     
     return pathToTitle[pathname] || 'Dashboard';
   };
