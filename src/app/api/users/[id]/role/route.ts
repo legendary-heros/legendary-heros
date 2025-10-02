@@ -19,7 +19,7 @@ export async function PATCH(
       const { role } = body;
 
       // Validate role
-      const validRoles: UserRole[] = ['superadmin', 'admin', 'leader', 'member'];
+      const validRoles: UserRole[] = ['superadmin', 'admin', 'member'];
       if (!role || !validRoles.includes(role)) {
         return NextResponse.json(
           { success: false, message: 'Invalid role value', data: null },

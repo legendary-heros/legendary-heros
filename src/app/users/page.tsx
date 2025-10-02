@@ -225,7 +225,6 @@ export default function UsersPage() {
     switch (role) {
       case 'superadmin': return 'bg-purple-100 text-purple-800';
       case 'admin': return 'bg-indigo-100 text-indigo-800';
-      case 'leader': return 'bg-blue-100 text-blue-800';
       case 'member': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -296,7 +295,6 @@ export default function UsersPage() {
                 <option value="">All Roles</option>
                 <option value="superadmin">Superadmin</option>
                 <option value="admin">Admin</option>
-                <option value="leader">Leader</option>
                 <option value="member">Member</option>
               </select>
             </div>
@@ -376,7 +374,6 @@ export default function UsersPage() {
                           >
                             <option value="superadmin">Superadmin</option>
                             <option value="admin">Admin</option>
-                            <option value="leader">Leader</option>
                             <option value="member">Member</option>
                           </select>
                         ) : (

@@ -10,6 +10,7 @@ import { TeamForm } from '@/components/teams/TeamForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
 import PageLoader from '@/components/ui/PageLoader';
 
 export default function TeamsPage() {
@@ -133,24 +134,20 @@ export default function TeamsPage() {
             </Card>
           )}
 
-          {/* Create Team Form */}
-          {showCreateForm && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Create New Team</CardTitle>
-                <CardDescription>
-                  Your team will need admin approval before becoming active
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TeamForm
-                  onSubmit={handleCreateTeam}
-                  onCancel={() => setShowCreateForm(false)}
-                  isLoading={updating}
-                />
-              </CardContent>
-            </Card>
-          )}
+          {/* Create Team Modal */}
+          <Modal
+            isOpen={showCreateForm}
+            onClose={() => setShowCreateForm(false)}
+            title="Create New Team"
+            description="Your team will need admin approval before becoming active"
+            size="lg"
+          >
+            <TeamForm
+              onSubmit={handleCreateTeam}
+              onCancel={() => setShowCreateForm(false)}
+              isLoading={updating}
+            />
+          </Modal>
 
           {/* Error Display */}
           {error && (

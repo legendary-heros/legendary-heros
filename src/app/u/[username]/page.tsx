@@ -88,8 +88,6 @@ export default function PublicProfilePage() {
         return 'bg-red-100 text-red-800 border-red-200';
       case 'admin':
         return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'leader':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'member':
         return 'bg-green-100 text-green-800 border-green-200';
       default:
