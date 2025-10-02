@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { ITeamMemberWithUser, TeamMemberRole } from '@/types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { getUserLevel } from '@/utils/levelUtils';
+import { StarRating } from '@/components/ui/StarRating';
 
 interface MemberCardProps {
   member: ITeamMemberWithUser;
@@ -82,9 +84,22 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                 {getRoleLabel(member.role)}
               </span>
             </div>
-            <p className="text-sm text-gray-500">
-              Score: {parseFloat(member.user.score).toFixed(2)}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-gray-500">
+                Score: {parseFloat(member.user.score).toFixed(2)}
+              </p>
+              {(() => {
+                const level = getUserLevel(Number(member.user.score) || 0);
+                return (
+                  <div className="flex items-center gap-1">
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${level.bgColor} ${level.textColor}`}>
+                      {level.name}
+                    </span>
+                    <StarRating count={level.stars} maxStars={5} className="w-4 h-4" />
+                  </div>
+                );
+              })()}
+            </div>
           </div>
 
           {canManage && member.role !== 'leader' && (

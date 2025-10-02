@@ -10,6 +10,8 @@ import { MainLayout } from '@/components/layouts/MainLayout';
 import PublicRoute from '@/components/auth/PublicRoute';
 import { getUserByUsername, voteUser, clearProfile, checkVoteStatus } from '@/store/slices/userProfileSlice';
 import { AppDispatch } from '@/store';
+import { getUserLevel } from '@/utils/levelUtils';
+import { StarRating } from '@/components/ui/StarRating';
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -117,88 +119,6 @@ export default function PublicProfilePage() {
     });
   };
 
-  const getUserLevel = (score: number) => {
-    if (score >= 1000) {
-      return {
-        name: 'SS Level',
-        tier: 'master',
-        stars: 5,
-        description: 'Monster, God',
-        color: 'from-yellow-400 to-orange-500',
-        textColor: 'text-yellow-600',
-        bgColor: 'bg-yellow-50'
-      };
-    } else if (score >= 500) {
-      return {
-        name: 'S Level',
-        tier: 'expert',
-        stars: 4,
-        description: 'A hero who has ability to change round situation',
-        color: 'from-purple-400 to-pink-500',
-        textColor: 'text-purple-600',
-        bgColor: 'bg-purple-50'
-      };
-    } else if (score >= 250) {
-      return {
-        name: 'A Level',
-        tier: 'professional',
-        stars: 3,
-        description: 'A hero who can do rampage in round',
-        color: 'from-blue-400 to-cyan-500',
-        textColor: 'text-blue-600',
-        bgColor: 'bg-blue-50'
-      };
-    } else if (score >= 100) {
-      return {
-        name: 'B Level',
-        tier: 'intermediate',
-        stars: 2,
-        description: 'A hero who is good at carry and support both and sometimes takes 1 place in the round',
-        color: 'from-green-400 to-emerald-500',
-        textColor: 'text-green-600',
-        bgColor: 'bg-green-50'
-      };
-    } else if (score >= 50) {
-      return {
-        name: 'C Level',
-        tier: 'beginner',
-        stars: 1,
-        description: 'A hero who is good at carry',
-        color: 'from-blue-400 to-blue-500',
-        textColor: 'text-blue-600',
-        bgColor: 'bg-blue-50'
-      };
-    } else {
-      return {
-        name: 'D Level',
-        tier: 'novice',
-        stars: 0,
-        description: 'A new hero starting their journey',
-        color: 'from-slate-300 to-slate-400',
-        textColor: 'text-slate-600',
-        bgColor: 'bg-slate-50'
-      };
-    }
-  };
-
-  const renderStars = (count: number, maxStars: number = 5) => {
-    return (
-      <div className="flex gap-1">
-        {[...Array(maxStars)].map((_, index) => (
-          <svg
-            key={index}
-            className={`w-5 h-5 ${
-              index < count ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 fill-gray-300'
-            }`}
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-        ))}
-      </div>
-    );
-  };
 
   const renderComponent = () => {
     return (
@@ -271,7 +191,7 @@ export default function PublicProfilePage() {
                           {level.name} <span className="text-sm font-normal text-gray-600">- {level.tier}</span>
                         </div>
                       </div>
-                      {renderStars(level.stars)}
+                      <StarRating count={level.stars} />
                     </div>
                     <p className="text-sm text-gray-600 text-left italic">{level.description}</p>
                   </div>

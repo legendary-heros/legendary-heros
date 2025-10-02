@@ -212,7 +212,7 @@ export default function TeamDetailPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header Banner */}
         {currentTeam.ad_url && (
-          <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6">
+          <div className="relative w-full h-48 md:h-85 rounded-lg overflow-hidden mb-6">
             <Image
               src={currentTeam.ad_url}
               alt={currentTeam.name}

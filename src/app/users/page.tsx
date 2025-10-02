@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { IRootState, IUser, UserStatus, UserRole } from '@/types';
 import { isAdmin, isSuperAdmin } from '@/lib/auth-middleware';
+import { getUserLevel } from '@/utils/levelUtils';
+import { StarRating } from '@/components/ui/StarRating';
 import { 
   getUsers, 
   updateUserStatus, 
@@ -383,13 +385,26 @@ export default function UsersPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <input
-                          type="number"
-                          value={getCurrentValue(user, 'score')}
-                          onChange={(e) => handleScoreChange(user.id, e.target.value)}
-                          disabled={updatingUserId === user.id || !canChangeUserScore(user)}
-                          className={`w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm ${hasPendingChanges(user.id) ? 'ring-2 ring-yellow-400' : ''} ${!canChangeUserScore(user) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                        />
+                        <div className="flex flex-col gap-1">
+                          <input
+                            type="number"
+                            value={getCurrentValue(user, 'score')}
+                            onChange={(e) => handleScoreChange(user.id, e.target.value)}
+                            disabled={updatingUserId === user.id || !canChangeUserScore(user)}
+                            className={`w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm ${hasPendingChanges(user.id) ? 'ring-2 ring-yellow-400' : ''} ${!canChangeUserScore(user) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          />
+                          {(() => {
+                            const level = getUserLevel(Number(getCurrentValue(user, 'score')) || 0);
+                            return (
+                              <div className="flex items-center gap-1">
+                                <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${level.bgColor} ${level.textColor}`}>
+                                  {level.name}
+                                </span>
+                                <StarRating count={level.stars} maxStars={5} className="w-3 h-3" />
+                              </div>
+                            );
+                          })()}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
