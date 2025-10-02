@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Legendary Heroes",
-  description: "A Next.js app with Supabase and Redux",
+  description: "Legendary Heroes is a web application for managing your team and users.",
 };
 
 export default function RootLayout({
