@@ -4,11 +4,11 @@ import { db } from '@/lib/supabase';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuth(request, async (req) => {
     try {
-      const userId = params.id;
+      const { id: userId } = await params;
       const voterId = req.user?.id;
 
       if (!voterId) {
@@ -121,11 +121,11 @@ export async function POST(
 // Check if user has voted for another user
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuth(request, async (req) => {
     try {
-      const userId = params.id;
+      const { id: userId } = await params;
       const voterId = req.user?.id;
 
       if (!voterId) {

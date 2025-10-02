@@ -6,11 +6,12 @@ import type { IApiResponse, ITeamInvitationWithDetails } from '@/types';
 // PATCH /api/teams/invitations/[id] - Accept or reject invitation
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuth(request, async (req) => {
     try {
       const user = req.user!;
+      const { id } = await params;
 
     const body = await request.json();
     const { action } = body; // 'accept' or 'reject'
@@ -27,7 +28,7 @@ export async function PATCH(
     }
 
       // Get invitation
-      const { data: invitation, error: invError } = await db.getInvitation(params.id);
+      const { data: invitation, error: invError } = await db.getInvitation(id);
 
       if (invError || !invitation) {
         return NextResponse.json<IApiResponse>(
@@ -69,7 +70,7 @@ export async function PATCH(
     const status = action === 'accept' ? 'accepted' : 'rejected';
 
     // Update invitation status
-    const { data: updatedInvitation, error } = await db.updateInvitationStatus(params.id, status);
+    const { data: updatedInvitation, error } = await db.updateInvitationStatus(id, status);
 
     if (error) {
       return NextResponse.json<IApiResponse>(

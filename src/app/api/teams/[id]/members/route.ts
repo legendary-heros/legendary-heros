@@ -6,17 +6,18 @@ import type { IApiResponse, ITeamMemberWithUser } from '@/types';
 // GET /api/teams/[id]/members - Get all team members
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { data: members, error } = await db.getTeamMembers(params.id);
+    const { id } = await params;
+    const { data: members, error } = await db.getTeamMembers(id);
 
     if (error) {
       return NextResponse.json<IApiResponse>(
         {
           success: false,
           message: error.message,
-          data: params,
+          data: { id },
         },
         { status: 500 }
       );
@@ -42,11 +43,12 @@ export async function GET(
 // DELETE /api/teams/[id]/members - Remove a team member
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuth(request, async (req) => {
     try {
       const user = req.user!;
+      const { id } = await params;
 
     const { searchParams } = request.nextUrl;
     const userId = searchParams.get('userId');
@@ -62,7 +64,7 @@ export async function DELETE(
       );
     }
 
-      const { data: team, error: teamError } = await db.getTeam(params.id);
+      const { data: team, error: teamError } = await db.getTeam(id);
 
       if (teamError || !team) {
         return NextResponse.json<IApiResponse>(
@@ -104,7 +106,7 @@ export async function DELETE(
         );
       }
 
-      const { error } = await db.removeTeamMember(params.id, userId);
+      const { error } = await db.removeTeamMember(id, userId);
 
       if (error) {
         return NextResponse.json<IApiResponse>(
@@ -138,11 +140,12 @@ export async function DELETE(
 // PATCH /api/teams/[id]/members - Update team member role
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuth(request, async (req) => {
     try {
       const user = req.user!;
+      const { id } = await params;
       const { memberId, role } = await req.json();
 
       if (!memberId || !role) {
@@ -157,7 +160,7 @@ export async function PATCH(
       }
 
       // Check if team exists and user is leader
-      const { data: team, error: teamError } = await db.getTeam(params.id);
+      const { data: team, error: teamError } = await db.getTeam(id);
       if (teamError || !team) {
         return NextResponse.json<IApiResponse>(
           {

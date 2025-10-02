@@ -10,11 +10,11 @@ import type { IUserDB } from '@/types';
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAdmin(request, async (req) => {
     try {
-      const userId = params.id;
+      const { id: userId } = await params;
       const body = await req.json();
       const { score } = body;
 

@@ -10,10 +10,10 @@ import type { IUserDB, IUserWithTeam, ITeamWithLeader, TeamMemberRole } from '@/
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = params.id;
+    const { id: userId } = await params;
 
     if (!userId) {
       return NextResponse.json(
@@ -86,11 +86,11 @@ export async function GET(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAdmin(request, async (req) => {
     try {
-      const userId = params.id;
+      const { id: userId } = await params;
 
       // Prevent users from deleting themselves
       if (req.userId === userId) {

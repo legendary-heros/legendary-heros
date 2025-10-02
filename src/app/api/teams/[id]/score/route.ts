@@ -18,11 +18,12 @@ import type { IApiResponse, ITeamWithLeader } from '@/types';
 // PATCH /api/teams/[id]/score - Update team score (Admin only)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAdmin(request, async (req) => {
     try {
       const user = req.user!;
+      const { id } = await params;
       const body = await request.json();
       const { score, reason } = body;
 
@@ -51,7 +52,7 @@ export async function PATCH(
       }
 
       // Check if team exists
-      const { data: team, error: teamError } = await db.getTeam(params.id);
+      const { data: team, error: teamError } = await db.getTeam(id);
 
       if (teamError || !team) {
         return NextResponse.json<IApiResponse>(
@@ -65,7 +66,7 @@ export async function PATCH(
       }
 
       // Update team score
-      const { data: updatedTeam, error } = await db.updateTeam(params.id, {
+      const { data: updatedTeam, error } = await db.updateTeam(id, {
         score: scoreNumber.toString()
       });
 
@@ -81,7 +82,7 @@ export async function PATCH(
       }
 
       // Log the score change for audit purposes
-      console.log(`Admin ${user.username} (${user.id}) updated team ${params.id} score from ${team.score} to ${scoreNumber}${reason ? ` - Reason: ${reason}` : ''}`);
+      console.log(`Admin ${user.username} (${user.id}) updated team ${id} score from ${team.score} to ${scoreNumber}${reason ? ` - Reason: ${reason}` : ''}`);
 
       return NextResponse.json<IApiResponse<ITeamWithLeader>>({
         success: true,
@@ -104,12 +105,13 @@ export async function PATCH(
 // GET /api/teams/[id]/score - Get team score history (Admin only)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAdmin(request, async (req) => {
     try {
+      const { id } = await params;
       // Check if team exists
-      const { data: team, error: teamError } = await db.getTeam(params.id);
+      const { data: team, error: teamError } = await db.getTeam(id);
 
       if (teamError || !team) {
         return NextResponse.json<IApiResponse>(

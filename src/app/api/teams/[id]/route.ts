@@ -6,17 +6,18 @@ import type { IApiResponse, ITeamWithLeader } from '@/types';
 // GET /api/teams/[id] - Get a specific team
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { data: team, error } = await db.getTeamBySlug(params.id);
+    const { id } = await params;
+    const { data: team, error } = await db.getTeamBySlug(id);
 
     if (error || !team) {
       return NextResponse.json<IApiResponse>(
         {
           success: false,
           message: 'Team not found',
-          data: params,
+          data: { id },
         },
         { status: 404 }
       );
@@ -42,13 +43,14 @@ export async function GET(
 // PATCH /api/teams/[id] - Update a team
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuth(request, async (req) => {
     try {
       const user = req.user!;
+      const { id } = await params;
 
-      const { data: team, error: teamError } = await db.getTeam(params.id);
+      const { data: team, error: teamError } = await db.getTeam(id);
 
       if (teamError || !team) {
         return NextResponse.json<IApiResponse>(
@@ -129,7 +131,7 @@ export async function PATCH(
       }
     }
 
-      const { data: updatedTeam, error } = await db.updateTeam(params.id, updateData);
+      const { data: updatedTeam, error } = await db.updateTeam(id, updateData);
 
       if (error || !updatedTeam) {
         return NextResponse.json<IApiResponse>(
@@ -163,13 +165,14 @@ export async function PATCH(
 // DELETE /api/teams/[id] - Delete a team
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuth(request, async (req) => {
     try {
       const user = req.user!;
+      const { id } = await params;
 
-      const { data: team, error: teamError } = await db.getTeam(params.id);
+      const { data: team, error: teamError } = await db.getTeam(id);
 
       if (teamError || !team) {
         return NextResponse.json<IApiResponse>(
@@ -200,7 +203,7 @@ export async function DELETE(
       }
 
       // Check if team has members (excluding the leader)
-      const { data: teamMembers, error: membersError } = await db.getTeamMembers(params.id);
+      const { data: teamMembers, error: membersError } = await db.getTeamMembers(id);
       
       if (membersError) {
         return NextResponse.json<IApiResponse>(
@@ -225,7 +228,7 @@ export async function DELETE(
         );
       }
 
-      const { error } = await db.deleteTeam(params.id);
+      const { error } = await db.deleteTeam(id);
 
       if (error) {
         return NextResponse.json<IApiResponse>(
