@@ -4,6 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ITeamWithLeader } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { getTeamLevel } from '@/utils/levelUtils';
+import { StarRating } from '@/components/ui/StarRating';
 
 interface TeamCardProps {
   team: ITeamWithLeader;
@@ -61,6 +63,22 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
               {team.bio}
             </p>
           )}
+          
+          {/* Team Level Display */}
+          {(() => {
+            const level = getTeamLevel(Number(team.score) || 0);
+            return (
+              <div className="flex items-center justify-between mb-2">
+                  <div className="text-left">
+                    <div className="text-sm font-bold text-gray-900">
+                      {level.name}
+                    </div>
+                  </div>
+                  <StarRating count={level.stars} maxStars={5} className="w-4 h-4" />
+                </div>
+            );
+          })()}
+          
           <div className="flex items-center justify-between text-sm">
             <div className="flex gap-4">
               <div>

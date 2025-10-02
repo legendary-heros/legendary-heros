@@ -275,6 +275,17 @@ export interface ITeamForm {
   ad?: File | null;
 }
 
+// Level types
+export interface TeamLevel {
+  name: string;
+  tier: string;
+  stars: number;
+  description: string;
+  color: string;
+  textColor: string;
+  bgColor: string;
+}
+
 // Extended database interface
 export interface IDatabase {
   public: {

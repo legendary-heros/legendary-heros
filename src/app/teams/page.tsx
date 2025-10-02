@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import PageLoader from '@/components/ui/PageLoader';
+import { StarRating } from '@/components/ui/StarRating';
+import { getTeamLevel } from '@/utils/levelUtils';
 
 export default function TeamsPage() {
   const router = useRouter();
@@ -116,16 +118,35 @@ export default function TeamsPage() {
                 <CardDescription>You are {user?.id === myTeam.leader_id ? 'leading' : 'a member of'} this team</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-end justify-between">
+                  <div className="flex-1">
                     <h3 className="font-bold text-xl">{myTeam.name}</h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 mb-3">
                       {myTeam.member_count} members • Score: {parseFloat(myTeam.score).toFixed(2)}
                     </p>
+                    
+                    {/* Team Level Display */}
+                    {(() => {
+                      const level = getTeamLevel(Number(myTeam.score) || 0);
+                      return (
+                        <div className={`p-3 rounded-lg ${level.bgColor} border border-${level.textColor.replace('text-', '')}-200`}>
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="text-left">
+                              <div className="text-sm font-bold text-gray-900">
+                                {level.name} <span className="text-xs font-normal text-gray-600">- {level.tier}</span>
+                              </div>
+                            </div>
+                            <StarRating count={level.stars} maxStars={5} className="w-4 h-4" />
+                          </div>
+                          <p className="text-xs text-gray-600 italic">{level.description}</p>
+                        </div>
+                      );
+                    })()}
                   </div>
                   <Button
                     onClick={() => router.push(`/teams/${myTeam.slug}`)}
                     variant="secondary"
+                    className="ml-4"
                   >
                     View Team
                   </Button>

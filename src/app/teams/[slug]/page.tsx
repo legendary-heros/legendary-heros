@@ -27,6 +27,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import PageLoader from '@/components/ui/PageLoader';
+import { StarRating } from '@/components/ui/StarRating';
+import { getTeamLevel } from '@/utils/levelUtils';
 import type { TeamMemberRole } from '@/types';
 
 export default function TeamDetailPage() {
@@ -290,6 +292,24 @@ export default function TeamDetailPage() {
                 {currentTeam.bio && (
                   <p className="text-gray-700 mt-3">{currentTeam.bio}</p>
                 )}
+
+                {/* Team Level Display */}
+                {(() => {
+                  const level = getTeamLevel(Number(currentTeam.score) || 0);
+                  return (
+                    <div className={`mt-4 p-4 rounded-xl ${level.bgColor} border-2 border-${level.textColor.replace('text-', '')}-200`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-left">
+                          <div className="text-xl font-bold text-gray-900">
+                            {level.name} <span className="text-sm font-normal text-gray-600">- {level.tier}</span>
+                          </div>
+                        </div>
+                        <StarRating count={level.stars} />
+                      </div>
+                      <p className="text-sm text-gray-600 italic">{level.description}</p>
+                    </div>
+                  );
+                })()}
 
                 <div className="flex gap-6 mt-4">
                   <div className="flex items-center ">
