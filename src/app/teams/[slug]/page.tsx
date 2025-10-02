@@ -9,6 +9,7 @@ import {
   fetchTeam,
   fetchTeamMembers,
   updateTeam,
+  updateTeamScore,
   deleteTeam,
   removeTeamMember,
   updateTeamMemberRole,
@@ -42,6 +43,10 @@ export default function TeamDetailPage() {
   const [inviteUsername, setInviteUsername] = useState('');
   const [inviteError, setInviteError] = useState('');
   const [joinMessage, setJoinMessage] = useState('');
+  const [showScoreEditor, setShowScoreEditor] = useState(false);
+  const [newScore, setNewScore] = useState('');
+  const [scoreReason, setScoreReason] = useState('');
+  const [scoreError, setScoreError] = useState('');
 
   useEffect(() => {
     const loadTeam = async () => {
@@ -194,6 +199,36 @@ export default function TeamDetailPage() {
     }
   };
 
+  const handleUpdateScore = async () => {
+    setScoreError('');
+    
+    if (!newScore.trim()) {
+      setScoreError('Please enter a score');
+      return;
+    }
+
+    const scoreNumber = parseFloat(newScore);
+    if (isNaN(scoreNumber) || scoreNumber < 0) {
+      setScoreError('Score must be a valid positive number');
+      return;
+    }
+
+    try {
+      await dispatch(updateTeamScore({
+        teamId: currentTeam.id,
+        score: scoreNumber,
+        reason: scoreReason.trim() || undefined,
+      })).unwrap();
+      
+      setShowScoreEditor(false);
+      setNewScore('');
+      setScoreReason('');
+      alert('Team score updated successfully!');
+    } catch (err: any) {
+      setScoreError(err.message || 'Failed to update score');
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const styles = {
       approved: 'bg-green-100 text-green-800',
@@ -257,13 +292,30 @@ export default function TeamDetailPage() {
                 )}
 
                 <div className="flex gap-6 mt-4">
-                  <div>
+                  <div className="flex items-center ">
                     <span className="text-gray-500">Members:</span>
                     <span className="font-bold ml-2">{currentTeam.member_count}</span>
                   </div>
-                  <div>
+                  <div className="flex items-center gap-2">
                     <span className="text-gray-500">Team Score:</span>
-                    <span className="font-bold ml-2">{parseFloat(currentTeam.score).toFixed(2)}</span>
+                    <span className="font-bold">{parseFloat(currentTeam.score).toFixed(2)}</span>
+                    {isAdmin && (
+                      <>
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          Admin Control
+                        </span>
+                        <Button
+                          onClick={() => {
+                            setNewScore(currentTeam.score);
+                            setShowScoreEditor(true);
+                          }}
+                          size="sm"
+                          variant="secondary"
+                        >
+                          Edit Score
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -329,6 +381,72 @@ export default function TeamDetailPage() {
                 <Button onClick={() => setShowDeleteConfirm(false)} variant="secondary">
                   Cancel
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Score Editor */}
+        {showScoreEditor && isAdmin && (
+          <Card className="mb-6 border-blue-300">
+            <CardContent className="p-6">
+              <h3 className="font-bold text-lg text-blue-600 mb-2">Update Team Score</h3>
+              <p className="text-gray-600 mb-4">
+                Current score: <span className="font-bold">{parseFloat(currentTeam.score).toFixed(2)}</span>
+                <span className="text-sm text-gray-500 ml-2">
+                  (Last updated: {new Date(currentTeam.updated_at).toLocaleDateString()})
+                </span>
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    New Score
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={newScore}
+                    onChange={(e) => setNewScore(e.target.value)}
+                    placeholder="Enter new score"
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Reason (Optional)
+                  </label>
+                  <textarea
+                    value={scoreReason}
+                    onChange={(e) => setScoreReason(e.target.value)}
+                    placeholder="Enter reason for score change..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    rows={3}
+                  />
+                </div>
+                {scoreError && (
+                  <p className="text-red-500 text-sm">{scoreError}</p>
+                )}
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleUpdateScore} 
+                    disabled={updating}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {updating ? 'Updating...' : 'Update Score'}
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setShowScoreEditor(false);
+                      setNewScore('');
+                      setScoreReason('');
+                      setScoreError('');
+                    }} 
+                    variant="secondary"
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -180,6 +180,31 @@ export const updateTeam = createAsyncThunk(
   }
 );
 
+export const updateTeamScore = createAsyncThunk(
+  'teams/updateTeamScore',
+  async ({ teamId, score, reason }: { 
+    teamId: string; 
+    score: number; 
+    reason?: string 
+  }, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(`${endpoints.teams.update(teamId)}/score`, { score, reason });
+      const result: IApiResponse<ITeamWithLeader> = response.data;
+
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to update team score');
+      }
+
+      // Clear cache after update
+      cache.clearByPage(CACHE_PAGE_NAME);
+
+      return result.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to update team score');
+    }
+  }
+);
+
 export const deleteTeam = createAsyncThunk(
   'teams/deleteTeam',
   async (teamId: string, { rejectWithValue }) => {
@@ -507,6 +532,23 @@ const teamsSlice = createSlice({
     builder.addCase(updateTeam.rejected, (state, action) => {
       state.updating = false;
       state.error = action.payload as string || 'Failed to update team';
+    });
+    builder.addCase(updateTeamScore.pending, (state) => {
+      state.updating = true;
+      state.error = null;
+    });
+    builder.addCase(updateTeamScore.fulfilled, (state, action) => {
+      state.updating = false;
+      if (state.currentTeam?.id === action.payload?.id) {
+        state.currentTeam = action.payload;
+      }
+      if (state.myTeam?.id === action.payload?.id) {
+        state.myTeam = action.payload;
+      }
+    });
+    builder.addCase(updateTeamScore.rejected, (state, action) => {
+      state.updating = false;
+      state.error = action.payload as string || 'Failed to update team score';
     });
 
     // Delete team
