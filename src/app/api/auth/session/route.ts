@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, extractTokenFromHeader } from '@/lib/jwt';
 import { db } from '@/lib/supabase';
+import type { IUserWithTeam, ITeamWithLeader, TeamMemberRole } from '@/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,8 +32,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user from database
-    const { data: user, error } = await db.getUser(payload.userId);
+    // Get user from database with team information
+    const { data: user, error } = await db.getUserWithTeam(payload.userId);
 
     if (error || !user) {
       return NextResponse.json(
@@ -45,17 +46,44 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user as any;
+    // Type assertion for the user data
+    const userData = user as any;
+
+    // Remove sensitive information and format with team data
+    const userWithTeam: IUserWithTeam = {
+      id: userData.id,
+      email: userData.email,
+      username: userData.username,
+      slackname: userData.slackname,
+      dotaname: userData.dotaname,
+      status: userData.status,
+      role: userData.role,
+      score: userData.score,
+      vote_count: userData.vote_count,
+      bio: userData.bio,
+      avatar_url: userData.avatar_url,
+      created_at: userData.created_at,
+      updated_at: userData.updated_at,
+      team: null,
+    };
+
+    // Check if user has team information
+    if (userData.team_members && userData.team_members.length > 0) {
+      const teamMember = userData.team_members[0];
+      userWithTeam.team = {
+        team: teamMember.team as ITeamWithLeader,
+        role: teamMember.role as TeamMemberRole,
+        joined_at: teamMember.joined_at,
+      };
+    }
 
     return NextResponse.json(
       { 
         success: true,
         message: 'Session retrieved successfully',
         data: {
-          user: userWithoutPassword
+          user: userWithTeam
         }
-        
       },
       { status: 200 }
     );

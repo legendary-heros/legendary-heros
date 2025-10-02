@@ -41,6 +41,15 @@ export interface IUser {
   updated_at: string;
 }
 
+// User with team information
+export interface IUserWithTeam extends IUser {
+  team?: {
+    team: ITeamWithLeader;
+    role: TeamMemberRole;
+    joined_at: string;
+  } | null;
+}
+
 export interface IUserInsert {
   email: string;
   password: string;

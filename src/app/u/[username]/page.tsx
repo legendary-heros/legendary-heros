@@ -1,6 +1,6 @@
 'use client';
 
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { IRootState } from '@/types';
@@ -10,16 +10,21 @@ import { MainLayout } from '@/components/layouts/MainLayout';
 import PublicRoute from '@/components/auth/PublicRoute';
 import { getUserByUsername, voteUser, clearProfile, checkVoteStatus } from '@/store/slices/userProfileSlice';
 import { AppDispatch } from '@/store';
-import { getUserLevel } from '@/utils/levelUtils';
+import { getUserLevel, getTeamLevel } from '@/utils/levelUtils';
 import { StarRating } from '@/components/ui/StarRating';
+import type { IUserWithTeam, TeamMemberRole } from '@/types';
 
 export default function PublicProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const username = params.username as string;
   const dispatch = useDispatch<AppDispatch>();
   
   const { user: currentUser, isAuthenticated } = useSelector((state: IRootState) => state.auth);
   const { user, loading, voting, hasVoted, error } = useSelector((state: IRootState) => state.userProfile);
+  
+  // Type assertion to include team information
+  const userWithTeam = user as IUserWithTeam | null;
   const [voteSuccess, setVoteSuccess] = useState(false);
 
   useEffect(() => {
@@ -32,10 +37,10 @@ export default function PublicProfilePage() {
 
   // Check vote status when user is loaded and current user is authenticated
   useEffect(() => {
-    if (user && currentUser && user.id !== currentUser.id && isAuthenticated) {
-      dispatch(checkVoteStatus(user.id));
+    if (userWithTeam && currentUser && userWithTeam.id !== currentUser.id && isAuthenticated) {
+      dispatch(checkVoteStatus(userWithTeam.id));
     }
-  }, [dispatch, user, currentUser, isAuthenticated]);
+  }, [dispatch, userWithTeam, currentUser, isAuthenticated]);
 
   useEffect(() => {
     if (error) {
@@ -64,15 +69,15 @@ export default function PublicProfilePage() {
     );
   }
 
-  if (!user) {
+  if (!userWithTeam) {
     return null;
   }
 
   const handleVote = async () => {
-    if (!user || !currentUser || user.id === currentUser.id || hasVoted) return;
+    if (!userWithTeam || !currentUser || userWithTeam.id === currentUser.id || hasVoted) return;
 
     try {
-      await dispatch(voteUser(user.id)).unwrap();
+      await dispatch(voteUser(userWithTeam.id)).unwrap();
       setVoteSuccess(true);
       // Reset success message after 3 seconds
       setTimeout(() => setVoteSuccess(false), 3000);
@@ -82,7 +87,13 @@ export default function PublicProfilePage() {
     }
   };
 
-  const canVote = isAuthenticated && currentUser && user && currentUser.id !== user.id && !hasVoted;
+  const canVote = isAuthenticated && currentUser && userWithTeam && currentUser.id !== userWithTeam.id && !hasVoted;
+
+  const handleTeamClick = () => {
+    if (userWithTeam?.team?.team?.slug) {
+      router.push(`/teams/${userWithTeam.team.team.slug}`);
+    }
+  };
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -110,6 +121,23 @@ export default function PublicProfilePage() {
     }
   };
 
+  const getTeamRoleBadgeColor = (role: TeamMemberRole) => {
+    switch (role) {
+      case 'leader':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'Orb Hero':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'King Creep':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'Bird Buyer':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'Bounty':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -130,25 +158,25 @@ export default function PublicProfilePage() {
             {/* Avatar */}
             <div className="flex justify-center -mt-16 mb-4">
               <div className="relative">
-                {user.avatar_url ? (
+                {userWithTeam.avatar_url ? (
                   <img
-                    src={user.avatar_url}
-                    alt={user.username}
+                    src={userWithTeam.avatar_url}
+                    alt={userWithTeam.username}
                     className="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover"
                   />
                 ) : (
                   <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                     <span className="text-5xl font-bold text-white">
-                      {user.username.charAt(0).toUpperCase()}
+                      {userWithTeam.username.charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
                 {/* Status Indicator */}
                 <div
                   className={`absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-white ${
-                    user.status === 'allow'
+                    userWithTeam.status === 'allow'
                       ? 'bg-green-500'
-                      : user.status === 'waiting'
+                      : userWithTeam.status === 'waiting'
                       ? 'bg-yellow-500'
                       : 'bg-red-500'
                   }`}
@@ -159,30 +187,31 @@ export default function PublicProfilePage() {
             {/* User Info */}
             <div className="text-center">
               <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                {user.username}
+                {userWithTeam.username}
               </h1>
 
               {/* Badges */}
-              <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-semibold border ${getRoleBadgeColor(
-                    user.role
+                    userWithTeam.role
                   )}`}
                 >
-                  {user.role.toUpperCase()}
+                  {userWithTeam.role.toUpperCase()}
                 </span>
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeColor(
-                    user.status
+                    userWithTeam.status
                   )}`}
                 >
-                  {user.status.toUpperCase()}
+                  {userWithTeam.status.toUpperCase()}
                 </span>
+                
               </div>
 
               {/* Level Display */}
               {(() => {
-                const level = getUserLevel(Number(user.score) || 0);
+                const level = getUserLevel(Number(userWithTeam.score) || 0);
                 return (
                   <div className={`max-w-md mx-auto mb-6 p-4 rounded-xl ${level.bgColor} border-2 border-${level.textColor.replace('text-', '')}-200`}>
                     <div className="flex items-center justify-between mb-2">
@@ -198,10 +227,83 @@ export default function PublicProfilePage() {
                 );
               })()}
 
+              {/* Team Information */}
+              {userWithTeam.team && (
+                <div 
+                  className="max-w-md mx-auto mb-6 p-4 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-200 group"
+                  onClick={handleTeamClick}
+                >
+                  <div className="flex items-center justify-center mb-3">
+                    {userWithTeam.team.team.mark_url ? (
+                      <img
+                        src={userWithTeam.team.team.mark_url}
+                        alt={`${userWithTeam.team.team.name} mark`}
+                        className="w-12 h-12 rounded-lg object-cover mr-3 shadow-md group-hover:shadow-lg transition-shadow duration-200"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-3 shadow-md group-hover:shadow-lg transition-shadow duration-200">
+                        <span className="text-white font-bold text-lg">
+                          {userWithTeam.team.team.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div className="text-left">
+                      <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-700 transition-colors duration-200">
+                        {userWithTeam.team.team.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 group-hover:text-indigo-600 transition-colors duration-200">
+                        Team role: 
+                        {/* Team Role Badge */}
+                        <span
+                          className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold border ${getTeamRoleBadgeColor(
+                            userWithTeam.team.role
+                          )}`}
+                        >
+                          {userWithTeam.team.role.toUpperCase()}
+                        </span>
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1 group-hover:text-indigo-500 transition-colors duration-200">
+                        Click to view team details →
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Team Level */}
+                  {(() => {
+                    const teamLevel = getTeamLevel(Number(userWithTeam.team.team.score) || 0);
+                    return (
+                      <div className={`p-3 rounded-lg ${teamLevel.bgColor} group-hover:shadow-md transition-shadow duration-200`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="text-left">
+                            <div className="text-sm font-bold text-gray-900">
+                              {teamLevel.name} <span className="text-xs font-normal text-gray-600">- {teamLevel.tier}</span>
+                            </div>
+                          </div>
+                          <StarRating count={teamLevel.stars} />
+                        </div>
+                        <div className="text-xs text-gray-600 text-left italic">{teamLevel.description}</div>
+                      </div>
+                    );
+                  })()}
+                  
+                  {/* Team Stats */}
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    <div className="bg-white/50 rounded-lg p-2 text-center group-hover:bg-white/70 transition-colors duration-200">
+                      <div className="text-lg font-bold text-indigo-700">{userWithTeam.team.team.score}</div>
+                      <div className="text-xs text-indigo-600 font-medium">Team Score</div>
+                    </div>
+                    <div className="bg-white/50 rounded-lg p-2 text-center group-hover:bg-white/70 transition-colors duration-200">
+                      <div className="text-lg font-bold text-purple-700">{userWithTeam.team.team.member_count}</div>
+                      <div className="text-xs text-purple-600 font-medium">Members</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Bio */}
-              {user.bio && (
+              {userWithTeam.bio && (
                 <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
-                  {user.bio}
+                  {userWithTeam.bio}
                 </p>
               )}
 
@@ -209,20 +311,20 @@ export default function PublicProfilePage() {
               <div className="grid grid-cols-2 gap-4 max-w-md mx-auto mt-8">
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 shadow-md">
                   <div className="text-3xl font-bold text-blue-700 mb-1">
-                    {user.score}
+                    {userWithTeam.score}
                   </div>
                   <div className="text-sm text-blue-600 font-medium">Score</div>
                 </div>
                 <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 shadow-md">
                   <div className="text-3xl font-bold text-purple-700 mb-1">
-                    {user.vote_count}
+                    {userWithTeam.vote_count}
                   </div>
                   <div className="text-sm text-purple-600 font-medium">Votes</div>
                 </div>
               </div>
 
               {/* Vote Button */}
-              {isAuthenticated && currentUser && user && currentUser.id !== user.id && (
+              {isAuthenticated && currentUser && userWithTeam && currentUser.id !== userWithTeam.id && (
                 <div className="mt-8 max-w-md mx-auto">
                   {voteSuccess ? (
                     <div className="bg-green-50 border-2 border-green-500 text-green-700 px-6 py-3 rounded-xl font-semibold text-center animate-pulse">
@@ -251,7 +353,7 @@ export default function PublicProfilePage() {
                           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                           </svg>
-                          <span>Vote for {user.username}</span>
+                          <span>Vote for {userWithTeam.username}</span>
                         </>
                       )}
                     </button>
@@ -286,18 +388,30 @@ export default function PublicProfilePage() {
               <div className="space-y-3">
                 <div className="flex items-start">
                   <span className="text-gray-500 font-medium min-w-[100px]">User Name:</span>
-                  <span className="text-gray-900">{user.username}</span>
+                  <span className="text-gray-900">{userWithTeam.username}</span>
                 </div>
-                {user.slackname && (
+                {userWithTeam.slackname && (
                   <div className="flex items-start">
                     <span className="text-gray-500 font-medium min-w-[100px]">Slack Name:</span>
-                    <span className="text-gray-900">{user.slackname}</span>
+                    <span className="text-gray-900">{userWithTeam.slackname}</span>
                   </div>
                 )}
-                {user.dotaname && (
+                {userWithTeam.dotaname && (
                   <div className="flex items-start">
                     <span className="text-gray-500 font-medium min-w-[100px]">Dota Name:</span>
-                    <span className="text-gray-900">{user.dotaname}</span>
+                    <span className="text-gray-900">{userWithTeam.dotaname}</span>
+                  </div>
+                )}
+                {userWithTeam.team && (
+                  <div className="flex items-start">
+                    <span className="text-gray-500 font-medium min-w-[100px]">Team:</span>
+                    <span className="text-gray-900">{userWithTeam.team.team.name}</span>
+                  </div>
+                )}
+                {userWithTeam.team && (
+                  <div className="flex items-start">
+                    <span className="text-gray-500 font-medium min-w-[100px]">Team Role:</span>
+                    <span className="text-gray-900">{userWithTeam.team.role}</span>
                   </div>
                 )}
               </div>
@@ -326,16 +440,22 @@ export default function PublicProfilePage() {
               <div className="space-y-3">
                 <div className="flex items-start">
                   <span className="text-gray-500 font-medium min-w-[100px]">Role:</span>
-                  <span className="text-gray-900 capitalize">{user.role}</span>
+                  <span className="text-gray-900 capitalize">{userWithTeam.role}</span>
                 </div>
                 <div className="flex items-start">
                   <span className="text-gray-500 font-medium min-w-[100px]">Status:</span>
-                  <span className="text-gray-900 capitalize">{user.status}</span>
+                  <span className="text-gray-900 capitalize">{userWithTeam.status}</span>
                 </div>
                 <div className="flex items-start">
                   <span className="text-gray-500 font-medium min-w-[100px]">Joined:</span>
-                  <span className="text-gray-900">{formatDate(user.created_at)}</span>
+                  <span className="text-gray-900">{formatDate(userWithTeam.created_at)}</span>
                 </div>
+                {userWithTeam.team && (
+                  <div className="flex items-start">
+                    <span className="text-gray-500 font-medium min-w-[100px]">Team Joined:</span>
+                    <span className="text-gray-900">{formatDate(userWithTeam.team.joined_at)}</span>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

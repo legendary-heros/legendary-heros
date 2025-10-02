@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAdmin } from '@/lib/auth-middleware';
 import { db } from '@/lib/supabase';
-import type { IUserDB } from '@/types';
+import type { IUserDB, IUserWithTeam, ITeamWithLeader, TeamMemberRole } from '@/types';
 
 /**
  * GET /api/users
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       const status = searchParams.get('status') || '';
       const role = searchParams.get('role') || '';
 
-      const { data: users, error, count } = await db.getUsersWithPagination({
+      const { data: users, error, count } = await db.getUsersWithPaginationAndTeams({
         page,
         limit,
         search,
@@ -33,18 +33,43 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      // Remove passwords from response
-      const sanitizedUsers = (users || []).map((user: IUserDB) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
+      // Process users with team information
+      const usersWithTeams: IUserWithTeam[] = (users || []).map((user: any) => {
+        const userWithTeam: IUserWithTeam = {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          slackname: user.slackname,
+          dotaname: user.dotaname,
+          status: user.status,
+          role: user.role,
+          score: user.score,
+          vote_count: user.vote_count,
+          bio: user.bio,
+          avatar_url: user.avatar_url,
+          created_at: user.created_at,
+          updated_at: user.updated_at,
+          team: null,
+        };
+
+        // Check if user has team information
+        if (user.team_members && user.team_members.length > 0) {
+          const teamMember = user.team_members[0];
+          userWithTeam.team = {
+            team: teamMember.team as ITeamWithLeader,
+            role: teamMember.role as TeamMemberRole,
+            joined_at: teamMember.joined_at,
+          };
+        }
+
+        return userWithTeam;
       });
 
       return NextResponse.json({
         success: true,
         message: 'Users fetched successfully',
         data: {
-          users: sanitizedUsers,
+          users: usersWithTeams,
           pagination: {
             page,
             limit,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/supabase';
-import type { IUser, IUserDB } from '@/types';
+import type { IUser, IUserDB, IUserWithTeam, ITeamWithLeader, TeamMemberRole } from '@/types';
 
 /**
  * GET /api/users/username/[username]
@@ -21,7 +21,7 @@ export async function GET(
       );
     }
 
-    const { data: user, error } = await db.getUserByUsername(username);
+    const { data: user, error } = await db.getUserByUsernameWithTeam(username);
 
     if (error || !user) {
       return NextResponse.json(
@@ -31,10 +31,10 @@ export async function GET(
     }
 
     // Type assertion for the user data
-    const userData = user as IUserDB;
+    const userData = user as any;
 
     // Remove sensitive information (password is already not in the response)
-    const publicUserData: IUser = {
+    const publicUserData: IUserWithTeam = {
       id: userData.id,
       email: userData.email,
       username: userData.username,
@@ -48,7 +48,18 @@ export async function GET(
       avatar_url: userData.avatar_url,
       created_at: userData.created_at,
       updated_at: userData.updated_at,
+      team: null,
     };
+
+    // Check if user has team information
+    if (userData.team_members && userData.team_members.length > 0) {
+      const teamMember = userData.team_members[0];
+      publicUserData.team = {
+        team: teamMember.team as ITeamWithLeader,
+        role: teamMember.role as TeamMemberRole,
+        joined_at: teamMember.joined_at,
+      };
+    }
 
     return NextResponse.json({
       success: true,

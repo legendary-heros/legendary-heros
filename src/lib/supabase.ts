@@ -77,6 +77,94 @@ export const db = {
     
     return { data, error, count };
   },
+
+  getUsersWithPaginationAndTeams: async (params: {
+    page: number;
+    limit: number;
+    search?: string;
+    status?: string;
+    role?: string;
+  }) => {
+    const { page, limit, search, status, role } = params;
+    const offset = (page - 1) * limit;
+
+    // Get users with pagination
+    let query = supabase
+      .from('users')
+      .select('*', { count: 'exact' });
+
+    // Apply search filter
+    if (search && search.trim()) {
+      query = query.or(`username.ilike.%${search}%,email.ilike.%${search}%`);
+    }
+
+    // Apply status filter
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    // Apply role filter
+    if (role) {
+      query = query.eq('role', role);
+    }
+
+    // Apply pagination and ordering
+    query = query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    const { data: users, error, count } = await query;
+    
+    if (error || !users) {
+      return { data: null, error, count };
+    }
+
+    // For each user, get their team information
+    const usersWithTeams = await Promise.all(
+      users.map(async (user: any) => {
+        // Check if user is a team leader
+        const { data: leaderTeam } = await supabase
+          .from('teams')
+          .select(`
+            *,
+            leader:users!teams_leader_id_fkey(*)
+          `)
+          .eq('leader_id', user.id)
+          .maybeSingle();
+
+        if (leaderTeam) {
+          return {
+            ...(user as any),
+            team_members: [{
+              team: leaderTeam,
+              role: 'leader',
+              joined_at: leaderTeam.created_at
+            }]
+          };
+        }
+
+        // If not a leader, check if user is a team member
+        const { data: memberData } = await supabase
+          .from('team_members')
+          .select(`
+            *,
+            team:teams(
+              *,
+              leader:users!teams_leader_id_fkey(*)
+            )
+          `)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        return {
+          ...(user as any),
+          team_members: memberData ? [memberData] : []
+        };
+      })
+    );
+
+    return { data: usersWithTeams, error: null, count };
+  },
   
   getUser: async (id: string) => {
     const { data, error } = await supabase
@@ -105,6 +193,142 @@ export const db = {
       .eq('username', username)
       .single();
     return { data, error };
+  },
+
+  getUserByUsernameWithTeam: async (username: string) => {
+    // First, get the user
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .single();
+
+    if (userError || !user) {
+      return { data: null, error: userError };
+    }
+
+    // Check if user is a team leader
+    const { data: leaderTeam, error: leaderError } = await supabase
+      .from('teams')
+      .select(`
+        *,
+        leader:users!teams_leader_id_fkey(*)
+      `)
+      .eq('leader_id', user.id)
+      .maybeSingle();
+
+    if (leaderError) {
+      return { data: null, error: leaderError };
+    }
+
+    // If user is a leader, return with team info
+    if (leaderTeam) {
+      return {
+        data: {
+          ...(user as any),
+          team_members: [{
+            team: leaderTeam,
+            role: 'leader',
+            joined_at: leaderTeam.created_at
+          }]
+        },
+        error: null
+      };
+    }
+
+    // If not a leader, check if user is a team member
+    const { data: memberData, error: memberError } = await supabase
+      .from('team_members')
+      .select(`
+        *,
+        team:teams(
+          *,
+          leader:users!teams_leader_id_fkey(*)
+        )
+      `)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (memberError) {
+      return { data: null, error: memberError };
+    }
+
+    // Return user with team member info or no team
+    return {
+      data: {
+        ...user,
+        team_members: memberData ? [memberData] : []
+      },
+      error: null
+    };
+  },
+
+  getUserWithTeam: async (id: string) => {
+    // First, get the user
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (userError || !user) {
+      return { data: null, error: userError };
+    }
+
+    // Check if user is a team leader
+    const { data: leaderTeam, error: leaderError } = await supabase
+      .from('teams')
+      .select(`
+        *,
+        leader:users!teams_leader_id_fkey(*)
+      `)
+      .eq('leader_id', user.id)
+      .maybeSingle();
+
+    if (leaderError) {
+      return { data: null, error: leaderError };
+    }
+
+    // If user is a leader, return with team info
+    if (leaderTeam) {
+      return {
+        data: {
+          ...(user as any),
+          team_members: [{
+            team: leaderTeam,
+            role: 'leader',
+            joined_at: leaderTeam.created_at
+          }]
+        },
+        error: null
+      };
+    }
+
+    // If not a leader, check if user is a team member
+    const { data: memberData, error: memberError } = await supabase
+      .from('team_members')
+      .select(`
+        *,
+        team:teams(
+          *,
+          leader:users!teams_leader_id_fkey(*)
+        )
+      `)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (memberError) {
+      return { data: null, error: memberError };
+    }
+
+    // Return user with team member info or no team
+    return {
+      data: {
+        ...user,
+        team_members: memberData ? [memberData] : []
+      },
+      error: null
+    };
   },
   
   createUser: async (userData: IUserInsert) => {
