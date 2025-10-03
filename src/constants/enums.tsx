@@ -6,6 +6,7 @@ export enum Path {
     LegendaryHeroes = '/legendary-heroes',
     Team = '/team',
     Teams = '/teams',
+    TeamInvitations = '/teams/invitations',
     Users = '/users',
 }
   
@@ -17,5 +18,6 @@ export enum RouteTitle {
     LegendaryHeroes = 'Legendary Heroes',
     Team = 'Team',
     Teams = 'Teams',
+    TeamInvitations = 'Team Invitations',
     Users = 'Users',
 }
