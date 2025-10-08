@@ -3,6 +3,7 @@ import api from '@/lib/api';
 import endpoints from '@/lib/endpoints';
 import type { IUser } from '@/types';
 import { cache } from '@/utils/cacheUtils';
+import { CACHE_PAGE_NAME as USERS_CACHE_PAGE_NAME } from './usersSlice';
 
 export const CACHE_PAGE_NAME = 'user_profile';
 
@@ -76,6 +77,7 @@ export const voteUser = createAsyncThunk(
             
             // Clear cache after voting to get updated data
             cache.clearByPage(CACHE_PAGE_NAME);
+            cache.clearByPage(USERS_CACHE_PAGE_NAME)
             
             if (response.data.success && response.data.data) {
                 return response.data.data;

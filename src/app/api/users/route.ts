@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth-middleware';
+import { withAdmin } from '@/lib/auth-middleware';
 import { db } from '@/lib/supabase';
 import type { IUserDB, IUserWithTeam, ITeamWithLeader, TeamMemberRole } from '@/types';
 
@@ -9,7 +9,7 @@ import type { IUserDB, IUserWithTeam, ITeamWithLeader, TeamMemberRole } from '@/
  * Requires: admin or superadmin role
  */
 export async function GET(request: NextRequest) {
-  return withAuth(request, async (req) => {
+  return withAdmin(request, async (req) => {
     try {
       const { searchParams } = new URL(req.url);
       const page = parseInt(searchParams.get('page') || '1');
@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
       const search = searchParams.get('search') || '';
       const status = searchParams.get('status') || '';
       const role = searchParams.get('role') || '';
+      const sortBy = searchParams.get('sortBy') || '';
 
       const { data: users, error, count } = await db.getUsersWithPaginationAndTeams({
         page,
@@ -24,6 +25,7 @@ export async function GET(request: NextRequest) {
         search,
         status,
         role,
+        sortBy,
       });
 
       if (error) {

@@ -66,16 +66,10 @@ export default function LegendaryHeroesPage() {
       role: roleFilter,
       team: teamFilter,
       teamRole: teamRoleFilter,
+      sortBy: 'score',
       append: false
     }));
   }, [dispatch, searchTerm, statusFilter, roleFilter, teamFilter, teamRoleFilter]);
-
-  // Sort users by score (highest first)
-  const sortedUsers = [...users].sort((a, b) => {
-    const scoreA = Number(a.score) || 0;
-    const scoreB = Number(b.score) || 0;
-    return scoreB - scoreA;
-  });
 
   // Infinite scroll observer
   const lastUserElementCallback = useCallback((node: HTMLDivElement | null) => {
@@ -93,6 +87,7 @@ export default function LegendaryHeroesPage() {
           role: roleFilter,
           team: teamFilter,
           teamRole: teamRoleFilter,
+          sortBy: 'score',
           append: true
         }));
       }
@@ -269,11 +264,11 @@ export default function LegendaryHeroesPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {sortedUsers.map((user, index) => (
+                  {users.map((user, index) => (
                     <tr 
                       key={user.id} 
                       className="hover:bg-gray-50"
-                      ref={index === sortedUsers.length - 1 ? lastUserElementCallback : null}
+                      ref={index === users.length - 1 ? lastUserElementCallback : null}
                     >
                       {/* Rank */}
                       <td className="px-3 py-4 whitespace-nowrap">

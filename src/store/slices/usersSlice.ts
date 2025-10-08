@@ -14,6 +14,7 @@ export interface UsersQueryParams {
     role?: string;
     team?: string;
     teamRole?: string;
+    sortBy?: string;
     append?: boolean; // For infinite scrolling
 }
 
@@ -52,7 +53,8 @@ export const getUsers = createAsyncThunk(
                 status: params.status || '',
                 role: params.role || '',
                 team: params.team || '',
-                teamRole: params.teamRole || ''
+                teamRole: params.teamRole || '',
+                sortBy: params.sortBy || ''
             };
 
             // Check cache first (only for non-append requests)
@@ -69,6 +71,7 @@ export const getUsers = createAsyncThunk(
                 ...(params.role && { role: params.role }),
                 ...(params.team && { team: params.team }),
                 ...(params.teamRole && { teamRole: params.teamRole }),
+                ...(params.sortBy && { sortBy: params.sortBy }),
             });
 
             const response = await api.get(`${endpoints.users.list}?${queryParams.toString()}`);

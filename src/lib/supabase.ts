@@ -84,8 +84,9 @@ export const db = {
     search?: string;
     status?: string;
     role?: string;
+    sortBy?: string;
   }) => {
-    const { page, limit, search, status, role } = params;
+    const { page, limit, search, status, role, sortBy } = params;
     const offset = (page - 1) * limit;
 
     // Get users with pagination
@@ -108,10 +109,16 @@ export const db = {
       query = query.eq('role', role);
     }
 
-    // Apply pagination and ordering
-    query = query
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    // Apply sorting and pagination
+    if (sortBy === 'score') {
+      query = query
+        .order('score', { ascending: false })
+        .range(offset, offset + limit - 1);
+    } else {
+      query = query
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+    }
 
     const { data: users, error, count } = await query;
     
