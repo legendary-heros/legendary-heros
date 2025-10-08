@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAdmin } from '@/lib/auth-middleware';
+import { withAuth } from '@/lib/auth-middleware';
 import { db } from '@/lib/supabase';
 import type { IUserDB, IUserWithTeam, ITeamWithLeader, TeamMemberRole } from '@/types';
 
@@ -9,7 +9,7 @@ import type { IUserDB, IUserWithTeam, ITeamWithLeader, TeamMemberRole } from '@/
  * Requires: admin or superadmin role
  */
 export async function GET(request: NextRequest) {
-  return withAdmin(request, async (req) => {
+  return withAuth(request, async (req) => {
     try {
       const { searchParams } = new URL(req.url);
       const page = parseInt(searchParams.get('page') || '1');
